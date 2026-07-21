@@ -12,6 +12,10 @@
 <!-- html2canvas 用于生成/下载船票图片 -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
+<!-- Firebase SDK (Compat 版本) -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
 <style>
 :root {
   --deep-blue: #0A192F;
@@ -71,8 +75,12 @@ html, body {
   z-index: 100; pointer-events: none;
 }
 
-/* ↗️ 右上角/快捷菜单与声音面板 */
 .nav-actions {
+  display: flex; gap: 10px; align-items: center;
+  pointer-events: auto;
+}
+
+.nav-actions-right {
   display: flex; gap: 10px; align-items: center;
   pointer-events: auto; margin-left: auto;
 }
@@ -84,10 +92,15 @@ html, body {
   color: #fff; text-decoration: none; font-size: 11px; font-weight: 500;
   padding: 8px 14px; border-radius: 16px; transition: all 0.2s;
   box-shadow: 0 8px 20px rgba(0,0,0,0.3); display: flex; align-items: center; gap: 5px;
+  cursor: pointer;
 }
 .nav-btn:hover {
   background: rgba(23, 74, 91, 0.85); border-color: var(--gold-bright);
   transform: translateY(-2px);
+}
+.nav-btn.btn-highlight {
+  background: linear-gradient(135deg, rgba(226, 185, 111, 0.3), rgba(23, 74, 91, 0.8));
+  border-color: var(--gold-bright);
 }
 
 .audio-panel {
@@ -123,6 +136,7 @@ html, body {
   background: linear-gradient(180deg, #FFFFFF 30%, var(--gold-bright) 100%);
   -webkit-background-clip: text; background-clip: text; color: transparent;
   text-shadow: 0 4px 20px rgba(0,0,0,0.4);
+  pointer-events: auto; cursor: default;
 }
 .subtitle { font-size: 12px; color: rgba(255,255,255,0.85); font-weight: 300; }
 
@@ -161,9 +175,7 @@ html, body {
   width: 140px; cursor: pointer; z-index: 20;
   transition: left 6s ease-in-out, top 6s ease-in-out, transform 0.5s ease-in-out;
 }
-.dolphin-flip {
-  width: 100%; transition: transform 0.5s ease-in-out;
-}
+.dolphin-flip { width: 100%; transition: transform 0.5s ease-in-out; }
 .dolphin-inner {
   width: 100%; transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
   animation: dolphinFloat 3.5s ease-in-out infinite;
@@ -221,7 +233,7 @@ html, body {
   font-size: 12px; font-weight: 500; color: #fff; white-space: nowrap;
   background: rgba(10, 25, 40, 0.8); backdrop-filter: blur(8px);
   padding: 8px 16px; border-radius: 20px; border: 1px solid var(--glass-border);
-  box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.3); pointer-events: none;
 }
 
 /* ✉️ 留言板页面专用样式 */
@@ -392,19 +404,26 @@ html, body {
   </video>
 </div>
 
-<!-- 顶部导航区（共享） -->
+<!-- 顶部导航区（左侧：Leave a Message 按钮；右侧：其他菜单与音乐） -->
 <div class="top-nav">
   <div class="nav-actions">
-    <a class="nav-btn" href="https://forms.gle/FpWn4BuPp7VAon7W8" target="_blank">🛍️ <span>Get Donation Kit</span></a>
-    <a class="nav-btn" href="https://t.me/+QfZM4CksHfM2ZjVl" target="_blank">🌐 <span>More Updates</span></a>
+    <!-- ✉️ 放在左上角的留言按钮 -->
+    <button class="nav-btn btn-highlight" onclick="switchView('message')">
+      ✉️ <span>Leave a Message</span>
+    </button>
+  </div>
+
+  <div class="nav-actions-right">
+    <a class="nav-btn" href="https://forms.gle/FpWn4BuPp7VAon7W8" target="_blank">🛍️ <span>Get Kit</span></a>
+    <a class="nav-btn" href="https://t.me/+QfZM4CksHfM2ZjVl" target="_blank">🌐 <span>Updates</span></a>
     
     <!-- 音频控制 -->
     <div class="audio-panel">
       <div class="audio-row" id="bgmRow">
         <div class="icon-btn">🎧</div>
         <div>
-          <div class="row-label">Yejun's Playlist</div>
-          <div class="row-sub" id="bgmSub">Tap play</div>
+          <div class="row-label">Playlist</div>
+          <div class="row-sub" id="bgmSub">Play</div>
         </div>
       </div>
     </div>
@@ -430,7 +449,7 @@ html, body {
     <div class="timer-container">
       <div class="timer-tabs">
         <button class="tab-btn active" id="tabBirthday" onclick="switchTimer('birthday')">🎂 Yejun's Birthday (09/12 KST)</button>
-        <button class="tab-btn" id="tabEvent" onclick="switchTimer('event')">🇲🇾 Yejun CSE: Whisper from the Deep Blue (09/19 MYT)</button>
+        <button class="tab-btn" id="tabEvent" onclick="switchTimer('event')">🇲🇾 Yejun CSE (09/19 MYT)</button>
       </div>
       <div class="timer-box">
         <div class="time-unit"><span class="time-num" id="dDays">00</span><span class="time-label">Days</span></div>
@@ -470,13 +489,6 @@ html, body {
       </div>
       <div class="bottle-hint">Click the drift bottle to unlock your message</div>
     </div>
-  </div>
-
-  <!-- ✉️ 前往留言板的按钮 -->
-  <div style="text-align: center; position: relative; z-index: 50; margin-bottom: 20px;">
-    <button class="btn btn-primary" onclick="switchView('message')" style="max-width: 260px; box-shadow: 0 8px 25px rgba(226, 185, 111, 0.4);">
-      ✉️ Leave a Message for Yejun
-    </button>
   </div>
 </div>
 
@@ -606,6 +618,56 @@ html, body {
 </div>
 
 <script>
+// 🔥 初始化 Firebase 配置
+const firebaseConfig = {
+  apiKey: "AIzaSyAJwhXT6yxv39D6IZkYjDp0ABQkNQyORP0",
+  authDomain: "mpd-yejun.firebaseapp.com",
+  databaseURL: "https://mpd-yejun-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "mpd-yejun",
+  storageBucket: "mpd-yejun.firebasestorage.app",
+  messagingSenderId: "993160358521",
+  appId: "1:993160358521:web:82387a954c03e8ae4782a8",
+  measurementId: "G-EFDFDRR910"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+const messagesRef = db.ref('messages');
+
+// 🔑 管理员暗号设置 (默认密码 "yejun0912")
+const ADMIN_PASSWORD = "yejun0912"; 
+let isAdmin = false;
+
+// 触发管理员模式：电脑端按 Ctrl + Shift + A，手机端连续点击标题5次
+window.addEventListener('keydown', (e) => {
+  if (e.ctrlKey && e.shiftKey && e.key === 'A') {
+    toggleAdminMode();
+  }
+});
+
+let titleClickCount = 0;
+document.querySelector('.title').addEventListener('click', () => {
+  titleClickCount++;
+  if (titleClickCount >= 5) {
+    toggleAdminMode();
+    titleClickCount = 0;
+  }
+});
+
+function toggleAdminMode() {
+  if (!isAdmin) {
+    const pwd = prompt("🔐 请输入管理员密码/暗号以启用删除功能：");
+    if (pwd === ADMIN_PASSWORD) {
+      isAdmin = true;
+      alert("✅ 已进入管理员模式！现在点击海面上的漂流瓶或水母即可进行删除。");
+    } else if (pwd !== null) {
+      alert("❌ 密码错误！");
+    }
+  } else {
+    isAdmin = false;
+    alert("🔒 已退出管理员模式。");
+  }
+}
+
 // 配置文件路径
 const BGM_URL = "./yejuncoverbgm.mp3"; 
 const PASSENGER_PHOTO_URL = "./plli.jpg"; 
@@ -750,7 +812,7 @@ if (bgmRow) {
         bgmRow.classList.add('playing');
         if (bgmSub) bgmSub.textContent = "Playing...";
       }).catch(err => {
-        alert("提示：未找到音频文件 yejuncoverbgm.mp3，Please check！");
+        alert("提示：未找到音频文件 yejuncoverbgm.mp3！");
       });
     } else {
       bgmAudio.pause();
@@ -786,7 +848,6 @@ function swimDolphin() {
 }
 swimDolphin();
 
-// 点击海豚：翻转 360 度 + 气泡
 const dolphinInner = document.getElementById('dolphinInner');
 const msgs = ["HAPPY YEJUN DAY! 🎂", "Welcome to Asterum!🌊", "NAM YEJUN!💙", "PLLI ❤️ YEJUN"];
 
@@ -830,7 +891,6 @@ function swimMeymu() {
 }
 swimMeymu();
 
-// 点击 Meymu：翻转 360 度
 const meymuInner = document.getElementById('meymuInner');
 if (meymu) {
   meymu.addEventListener('click', (e) => {
@@ -911,7 +971,7 @@ if (downloadBtn) {
   });
 }
 
-// 🔀 3. 页面视图无缝切换逻辑 (保持音乐不中断)
+// 🔀 页面视图无缝切换逻辑 (保持音乐不中断)
 function switchView(targetView) {
   const homeView = document.getElementById('homeView');
   const messageView = document.getElementById('messageView');
@@ -925,7 +985,7 @@ function switchView(targetView) {
   }
 }
 
-// 💌 4. 放飞留言逻辑
+// 🔥 Firebase 实时写入（发送留言）
 function releaseMessage() {
   const nameInput = document.getElementById('msgNameInput');
   const contentInput = document.getElementById('msgContentInput');
@@ -939,32 +999,58 @@ function releaseMessage() {
     return;
   }
 
-  // 创建放飞的漂浮元素
-  const messageOcean = document.getElementById('messageOcean');
-  const item = document.createElement('div');
-  item.className = 'floating-message-item';
-  
-  // 随机出现位置 (避开最上面导航区域)
-  const posX = 10 + Math.random() * 75; // 10% ~ 85%
-  const posY = 35 + Math.random() * 50; // 35% ~ 85%
-  item.style.left = posX + '%';
-  item.style.top = posY + '%';
-
-  const imgSrc = selectedType === 'bottle' ? './bottle.png' : './jellyfish.png';
-  item.innerHTML = `<img src="${imgSrc}" alt="${selectedType}">`;
-
-  // 点击飘浮物可查看留言
-  item.addEventListener('click', (e) => {
-    e.stopPropagation();
-    alert(`💌 Message from ${name}:\n\n"${content}"`);
+  messagesRef.push({
+    name: name,
+    content: content,
+    type: selectedType,
+    posX: 10 + Math.random() * 75,
+    posY: 35 + Math.random() * 50,
+    timestamp: Date.now()
+  }).then(() => {
+    contentInput.value = '';
+    alert('Your wish has been released to the ocean! 🌊💙');
+  }).catch((err) => {
+    alert('发送失败，请检查 Firebase 配置！');
   });
-
-  messageOcean.appendChild(item);
-
-  // 清空文本框
-  contentInput.value = '';
-  alert('Your wish has been released to the ocean! 🌊💙');
 }
+
+// 🔥 Firebase 实时监听并渲染海面上的所有留言（含删除功能）
+messagesRef.on('value', (snapshot) => {
+  const messageOcean = document.getElementById('messageOcean');
+  messageOcean.innerHTML = '';
+
+  const data = snapshot.val();
+  if (!data) return;
+
+  Object.keys(data).forEach((key) => {
+    const msg = data[key];
+    
+    const item = document.createElement('div');
+    item.className = 'floating-message-item';
+    item.style.left = msg.posX + '%';
+    item.style.top = msg.posY + '%';
+
+    const imgSrc = msg.type === 'bottle' ? './bottle.png' : './jellyfish.png';
+    item.innerHTML = `<img src="${imgSrc}" alt="${msg.type}">`;
+
+    item.addEventListener('click', (e) => {
+      e.stopPropagation();
+      
+      if (isAdmin) {
+        const confirmDelete = confirm(`🔑 [管理员模式]\n\n留言内容："${msg.content}"\n来自：${msg.name}\n\n⚠️ 是否确定删掉这条留言？`);
+        if (confirmDelete) {
+          db.ref(`messages/${key}`).remove().then(() => {
+            alert('❌ 留言已成功删除！');
+          });
+        }
+      } else {
+        alert(`💌 Message from ${msg.name}:\n\n"${msg.content}"`);
+      }
+    });
+
+    messageOcean.appendChild(item);
+  });
+});
 </script>
 </body>
 </html>
