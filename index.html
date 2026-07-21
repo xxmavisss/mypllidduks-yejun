@@ -219,7 +219,7 @@ html, body {
 .ticket-route { display: flex; align-items: center; gap: 10px; margin: 12px 0; }
 .route-code { font-family: 'Cinzel'; font-weight: 700; font-size: 14px; }
 .route-line { flex: 1; height: 1px; background: #C5B396; position: relative; }
-.route-line::after { content: '🐬'; position: absolute; right: 0; top: -10px; font-size: 12px; }
+.route-line::after { content: '🚢'; position: absolute; right: 0; top: -10px; font-size: 12px; }
 
 .ticket-body { display: flex; gap: 12px; align-items: center; margin-bottom: 10px; }
 .passenger-img { width: 55px; height: 55px; border-radius: 10px; object-fit: cover; border: 2px solid var(--gold-accent); }
@@ -266,10 +266,20 @@ html, body {
   padding: 6px 18px;
   border-radius: 20px;
   box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+.footer-text:hover {
+  background: rgba(23, 74, 91, 0.85);
+  border-color: var(--gold-accent);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(226, 185, 111, 0.3);
 }
 .footer-text strong {
   color: var(--gold-bright);
   font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 /* 📱 移动端适配 */
@@ -339,15 +349,15 @@ html, body {
     <div class="bottle-inner">
       <img src="./bottle.png" class="bottle-img" alt="Drift Bottle" />
     </div>
-    <div class="bottle-hint">Click the drift bottle to unlock your message 📜</div>
+    <div class="bottle-hint">Click the drift bottle to unlock your message</div>
   </div>
 </div>
 
-<!-- ⚓ 网页底部署名区 -->
+<!-- ⚓ 网页底部署名区（带有超链接） -->
 <div class="footer">
-  <div class="footer-text">
+  <a class="footer-text" href="https://lit.link/en/mypllidduks" target="_blank" rel="noopener noreferrer">
     by <strong>MYPlliDduks</strong>
-  </div>
+  </a>
 </div>
 
 <!-- 输入名字 Modal -->
@@ -380,11 +390,19 @@ html, body {
         </div>
         <div class="ticket-body">
           <img id="passengerImg" class="passenger-img" alt="PLLI Photo" />
-          <div>
+          <div style="flex: 1;">
             <div class="field-label">Passenger</div>
             <div class="field-value" id="pName">GUEST</div>
-            <div class="field-label" style="margin-top:4px;">Destination</div>
-            <div class="field-value" style="font-size:11px;">COMMON SPACE</div>
+            <div style="display: flex; gap: 12px; margin-top: 4px;">
+              <div>
+                <div class="field-label">Date</div>
+                <div class="field-value" style="font-size:10px;">19/09/2026 (Sat)</div>
+              </div>
+              <div>
+                <div class="field-label">Destination</div>
+                <div class="field-value" style="font-size:10px;">COMMON SPACE</div>
+              </div>
+            </div>
           </div>
         </div>
         <div style="font-size:10px; font-style:italic; color:#556677; border-top:1px dashed #D5C7B1; padding-top:6px;">
@@ -396,6 +414,8 @@ html, body {
         <div>
           <div class="field-label">Name</div>
           <div style="font-weight:700; font-size:11px;" id="stubPName">GUEST</div>
+          <div class="field-label" style="margin-top: 4px;">Date</div>
+          <div style="font-weight:700; font-size:9px; color: var(--ocean-teal);">19/09/2026</div>
         </div>
         <div style="font-size:8px; color:#888; letter-spacing:1px;">A1-2026-YJ</div>
       </div>
