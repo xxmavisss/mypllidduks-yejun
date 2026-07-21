@@ -182,6 +182,24 @@ html, body {
 }
 .speech-bubble.show { opacity: 1; transform: translateX(-50%) scale(1); }
 
+/* 🐬 Meymu */
+.meymu-wrapper {
+  position: absolute; left: 65%; top: 40%;
+  width: 200px; cursor: pointer; z-index: 20;
+  transition: left 6s ease-in-out, top 6s ease-in-out, transform 0.5s ease-in-out;
+}
+.meymu-inner {
+  width: 100%; transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: meymuFloat 3.8s ease-in-out infinite;
+}
+.meymu-img { width: 100%; height: auto; display: block; filter: drop-shadow(0 15px 25px rgba(0,0,0,0.5)); }
+.meymu-inner.flip-spin { transform: rotate(360deg) scale(1.15); }
+
+@keyframes meymuFloat {
+  0%, 100% { transform: translateY(0) rotate(3deg); }
+  50% { transform: translateY(-18px) rotate(-4deg); }
+}
+
 /* 🍾 漂流瓶 */
 .bottle-wrapper {
   position: absolute; left: 45%; top: 55%;
@@ -293,6 +311,7 @@ html, body {
   .header { padding-top: 65px; }
   .ocean-stage { height: 50vh; min-height: 300px; }
   .dolphin-wrapper { width: 140px; }
+  .meymu-wrapper { width: 120px; }
   .bottle-wrapper { width: 100px; }
   .ticket { flex-direction: column; }
   .ticket-stub { width: 100%; border-left: none; border-top: 2px dashed #C5B396; }
@@ -365,6 +384,13 @@ html, body {
     <div class="speech-bubble" id="speechBubble">HAPPY YEJUN DAY! 🎂</div>
     <div class="dolphin-inner" id="dolphinInner">
       <img src="./dolphin.png" class="dolphin-img" alt="Dolphin" />
+    </div>
+  </div>
+
+  <!-- 🐬 Meymu -->
+  <div class="meymu-wrapper" id="meymu">
+    <div class="meymu-inner" id="meymuInner">
+      <img src="./meymu.png" class="meymu-img" alt="Meymu" />
     </div>
   </div>
 
@@ -655,6 +681,41 @@ if (dolphin) {
       bubble.textContent = msgs[Math.floor(Math.random() * msgs.length)];
       bubble.classList.add('show');
       setTimeout(() => bubble.classList.remove('show'), 2500);
+    }
+  });
+}
+
+// 🐬 Meymu 智能游走与转向
+const meymu = document.getElementById('meymu');
+let currentMeymuX = 65;
+
+function swimMeymu() {
+  if (!meymu) return;
+  const nextX = 5 + Math.random() * 60;
+  const nextY = 10 + Math.random() * 50;
+
+  if (nextX < currentMeymuX) {
+    meymu.style.transform = 'scaleX(-1)';
+  } else {
+    meymu.style.transform = 'scaleX(1)';
+  }
+
+  currentMeymuX = nextX;
+  meymu.style.left = nextX + '%';
+  meymu.style.top = nextY + '%';
+
+  setTimeout(swimMeymu, 6000);
+}
+swimMeymu();
+
+// 点击 Meymu：翻转 360 度（无气泡对话框）
+const meymuInner = document.getElementById('meymuInner');
+if (meymu) {
+  meymu.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (meymuInner) {
+      meymuInner.classList.add('flip-spin');
+      setTimeout(() => meymuInner.classList.remove('flip-spin'), 800);
     }
   });
 }
