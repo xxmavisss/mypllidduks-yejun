@@ -152,14 +152,13 @@ html, body {
 
 /* 海域舞台 */
 .ocean-stage {
-  position: relative; width: 100%; height: 55vh; min-height: 400px; z-index: 10;
+  position: relative; width: 100%; height: 50vh; min-height: 360px; z-index: 10;
 }
 
 /* 🐬 海豚 */
 .dolphin-wrapper {
   position: absolute; left: 20%; top: 25%;
-  width: 140px; /* 👈 原来是 200px，改小了 */
-  cursor: pointer; z-index: 20;
+  width: 140px; cursor: pointer; z-index: 20;
   transition: left 6s ease-in-out, top 6s ease-in-out, transform 0.5s ease-in-out;
 }
 .dolphin-flip {
@@ -189,8 +188,7 @@ html, body {
 /* 🐬 Meymu */
 .meymu-wrapper {
   position: absolute; left: 65%; top: 40%;
-  width: 160px; /* 👈 原来是 240px，改小了 */
-  cursor: pointer; z-index: 20;
+  width: 160px; cursor: pointer; z-index: 20;
   transition: left 6s ease-in-out, top 6s ease-in-out, transform 0.5s ease-in-out;
 }
 .meymu-inner {
@@ -208,7 +206,7 @@ html, body {
 /* 🍾 漂流瓶 */
 .bottle-wrapper {
   position: absolute; left: 45%; top: 55%;
-  width: 150px; cursor: pointer; z-index: 30;
+  width: 130px; cursor: pointer; z-index: 30;
   transition: left 8s ease-in-out, top 8s ease-in-out;
 }
 .bottle-inner { width: 100%; animation: bottleSway 4s ease-in-out infinite; }
@@ -224,6 +222,65 @@ html, body {
   background: rgba(10, 25, 40, 0.8); backdrop-filter: blur(8px);
   padding: 8px 16px; border-radius: 20px; border: 1px solid var(--glass-border);
   box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+}
+
+/* ✉️ 留言板页面专用样式 */
+.message-view-container {
+  position: relative; z-index: 20; max-width: 520px; margin: 0 auto;
+  padding: 80px 20px 40px; text-align: center;
+}
+.message-form-card {
+  background: var(--glass-bg); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border); border-radius: 24px;
+  padding: 24px 20px; margin-top: 20px; box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+}
+.avatar-selection {
+  display: flex; justify-content: center; gap: 20px; margin-bottom: 20px;
+}
+.avatar-option input { display: none; }
+.avatar-card {
+  width: 110px; height: 120px; background: rgba(255, 255, 255, 0.05);
+  border: 2px solid transparent; border-radius: 18px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  cursor: pointer; transition: all 0.3s ease;
+}
+.avatar-card img {
+  width: 55px; height: 55px; object-fit: contain;
+  filter: drop-shadow(0 5px 10px rgba(0,0,0,0.4)); margin-bottom: 8px;
+}
+.avatar-card span { font-size: 12px; font-weight: 600; color: rgba(255,255,255,0.7); }
+
+.avatar-option input:checked + .avatar-card {
+  border-color: var(--gold-bright); background: rgba(255, 255, 255, 0.15);
+  box-shadow: 0 0 20px rgba(245, 215, 139, 0.3);
+}
+.avatar-option input:checked + .avatar-card span { color: var(--gold-bright); }
+
+.msg-textarea {
+  width: 100%; padding: 12px 16px; border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.3); background: rgba(255,255,255,0.1);
+  color: #fff; font-size: 13px; outline: none; margin-bottom: 16px;
+  resize: none; font-family: inherit;
+}
+.msg-textarea::placeholder { color: rgba(255,255,255,0.5); }
+
+/* 🌊 留言板海域（放置放飞的留言） */
+#messageOcean {
+  position: fixed; inset: 0; pointer-events: none; z-index: 15; overflow: hidden;
+}
+.floating-message-item {
+  position: absolute; pointer-events: auto; cursor: pointer;
+  transition: transform 0.3s ease; animation: itemFloat 4s ease-in-out infinite;
+}
+.floating-message-item img {
+  width: 65px; height: 65px; object-fit: contain;
+  filter: drop-shadow(0 8px 15px rgba(0,0,0,0.5));
+}
+.floating-message-item:hover { transform: scale(1.2) rotate(5deg); }
+
+@keyframes itemFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-12px); }
 }
 
 /* Modal 弹窗 */
@@ -285,7 +342,7 @@ html, body {
 .btn {
   display: inline-flex; align-items: center; justify-content: center;
   border: none; cursor: pointer; font-weight: 600; font-size: 13px;
-  padding: 11px 20px; border-radius: 999px; transition: transform 0.15s; width: 100%;
+  padding: 11px 20px; border-radius: 999px; transition: transform 0.15s, background 0.3s; width: 100%;
 }
 .btn-primary { background: linear-gradient(135deg, var(--gold-bright), var(--gold-accent)); color: #1A1008; }
 .btn-coral { background: linear-gradient(135deg, var(--coral-accent), #B84A32); color: #fff; margin-top: 12px; }
@@ -314,12 +371,10 @@ html, body {
   .top-nav { top: 10px; left: 10px; right: 10px; }
   .nav-btn span { display: none; }
   .header { padding-top: 65px; }
-  .ocean-stage { height: 50vh; min-height: 300px; }
-  
-  .dolphin-wrapper { width: 90px; }  /* 手机端海豚 */
-  .meymu-wrapper { width: 100px; }   /* 手机端Meymu */
+  .ocean-stage { height: 45vh; min-height: 280px; }
+  .dolphin-wrapper { width: 90px; }
+  .meymu-wrapper { width: 100px; }
   .bottle-wrapper { width: 80px; }
-  
   .ticket { flex-direction: column; }
   .ticket-stub { width: 100%; border-left: none; border-top: 2px dashed #C5B396; }
 }
@@ -337,7 +392,7 @@ html, body {
   </video>
 </div>
 
-<!-- 顶部导航区（含右侧按钮与 Sound Studio） -->
+<!-- 顶部导航区（共享） -->
 <div class="top-nav">
   <div class="nav-actions">
     <a class="nav-btn" href="https://forms.gle/FpWn4BuPp7VAon7W8" target="_blank">🛍️ <span>Get Donation Kit</span></a>
@@ -360,59 +415,116 @@ html, body {
 <audio id="bgmAudio" loop></audio>
 <audio id="wavesAudio" loop src="./seawavesbgm.mp3"></audio>
 
-<!-- 标题与倒计时区 -->
-<div class="header">
-  <div class="eyebrow">Welcome Aboard</div>
-  <h1 class="title">Whisper from the Deep Blue</h1>
-  <div class="subtitle">🇲🇾 Birthday Cafe for Yejun · Happy Birthday, Our Leader 🐬💙</div>
 
-  <!-- ⏳ 倒计时组件 -->
-  <div class="timer-container">
-    <div class="timer-tabs">
-      <button class="tab-btn active" id="tabBirthday" onclick="switchTimer('birthday')">🎂 Yejun's Birthday (09/12 KST)</button>
-      <button class="tab-btn" id="tabEvent" onclick="switchTimer('event')">🇲🇾 Yejun CSE: Whisper from the Deep Blue(09/19 MYT)</button>
-    </div>
-    <div class="timer-box">
-      <div class="time-unit"><span class="time-num" id="dDays">00</span><span class="time-label">Days</span></div>
-      <div class="time-num" style="font-size:14px; opacity:0.5; line-height:24px;">:</div>
-      <div class="time-unit"><span class="time-num" id="dHours">00</span><span class="time-label">Hours</span></div>
-      <div class="time-num" style="font-size:14px; opacity:0.5; line-height:24px;">:</div>
-      <div class="time-unit"><span class="time-num" id="dMins">00</span><span class="time-label">Mins</span></div>
-      <div class="time-num" style="font-size:14px; opacity:0.5; line-height:24px;">:</div>
-      <div class="time-unit"><span class="time-num" id="dSecs">00</span><span class="time-label">Secs</span></div>
-    </div>
-  </div>
-</div>
+<!-- =================================================== -->
+<!-- 🏠 视图 1：主页甲板 (Home View) -->
+<!-- =================================================== -->
+<div id="homeView">
+  <!-- 标题与倒计时区 -->
+  <div class="header">
+    <div class="eyebrow">Welcome Aboard</div>
+    <h1 class="title">Whisper from the Deep Blue</h1>
+    <div class="subtitle">🇲🇾 Birthday Cafe for Yejun · Happy Birthday, Our Leader 🐬💙</div>
 
-<!-- 海洋舞台 -->
-<div class="ocean-stage">
-  <!-- 🐬 海豚 -->
-  <div class="dolphin-wrapper" id="dolphin">
-    <div class="speech-bubble" id="speechBubble">HAPPY YEJUN DAY! 🎂</div>
-    <div class="dolphin-flip" id="dolphinFlip">
-      <div class="dolphin-inner" id="dolphinInner">
-        <img src="./dolphin.png" class="dolphin-img" alt="Dolphin" />
+    <!-- ⏳ 倒计时组件 -->
+    <div class="timer-container">
+      <div class="timer-tabs">
+        <button class="tab-btn active" id="tabBirthday" onclick="switchTimer('birthday')">🎂 Yejun's Birthday (09/12 KST)</button>
+        <button class="tab-btn" id="tabEvent" onclick="switchTimer('event')">🇲🇾 Yejun CSE: Whisper from the Deep Blue (09/19 MYT)</button>
+      </div>
+      <div class="timer-box">
+        <div class="time-unit"><span class="time-num" id="dDays">00</span><span class="time-label">Days</span></div>
+        <div class="time-num" style="font-size:14px; opacity:0.5; line-height:24px;">:</div>
+        <div class="time-unit"><span class="time-num" id="dHours">00</span><span class="time-label">Hours</span></div>
+        <div class="time-num" style="font-size:14px; opacity:0.5; line-height:24px;">:</div>
+        <div class="time-unit"><span class="time-num" id="dMins">00</span><span class="time-label">Mins</span></div>
+        <div class="time-num" style="font-size:14px; opacity:0.5; line-height:24px;">:</div>
+        <div class="time-unit"><span class="time-num" id="dSecs">00</span><span class="time-label">Secs</span></div>
       </div>
     </div>
   </div>
 
-  <!-- 🐬 Meymu -->
-  <div class="meymu-wrapper" id="meymu">
-    <div class="meymu-inner" id="meymuInner">
-      <img src="./meymu.png" class="meymu-img" alt="Meymu" />
+  <!-- 海洋舞台 -->
+  <div class="ocean-stage">
+    <!-- 🐬 海豚 -->
+    <div class="dolphin-wrapper" id="dolphin">
+      <div class="speech-bubble" id="speechBubble">HAPPY YEJUN DAY! 🎂</div>
+      <div class="dolphin-flip" id="dolphinFlip">
+        <div class="dolphin-inner" id="dolphinInner">
+          <img src="./dolphin.png" class="dolphin-img" alt="Dolphin" />
+        </div>
+      </div>
+    </div>
+
+    <!-- 🐬 Meymu -->
+    <div class="meymu-wrapper" id="meymu">
+      <div class="meymu-inner" id="meymuInner">
+        <img src="./meymu.png" class="meymu-img" alt="Meymu" />
+      </div>
+    </div>
+
+    <!-- 🍾 漂流瓶 -->
+    <div class="bottle-wrapper" id="bottle">
+      <div class="bottle-inner">
+        <img src="./bottle.png" class="bottle-img" alt="Drift Bottle" />
+      </div>
+      <div class="bottle-hint">Click the drift bottle to unlock your message</div>
     </div>
   </div>
 
-  <!-- 🍾 漂流瓶 -->
-  <div class="bottle-wrapper" id="bottle">
-    <div class="bottle-inner">
-      <img src="./bottle.png" class="bottle-img" alt="Drift Bottle" />
-    </div>
-    <div class="bottle-hint">Click the drift bottle to unlock your message</div>
+  <!-- ✉️ 前往留言板的按钮 -->
+  <div style="text-align: center; position: relative; z-index: 50; margin-bottom: 20px;">
+    <button class="btn btn-primary" onclick="switchView('message')" style="max-width: 260px; box-shadow: 0 8px 25px rgba(226, 185, 111, 0.4);">
+      ✉️ Leave a Message for Yejun
+    </button>
   </div>
 </div>
 
-<!-- ⚓ 网页底部署名区 -->
+
+<!-- =================================================== -->
+<!-- 💌 视图 2：独立留言板界面 (Message Board View) -->
+<!-- =================================================== -->
+<div id="messageView" style="display: none;">
+  <div class="message-view-container">
+    <button class="btn btn-outline" onclick="switchView('home')" style="width: auto; padding: 6px 18px; margin-bottom: 10px;">
+      🔙 Back to Main Deck
+    </button>
+    <h2 class="title" style="font-size: 28px; margin: 0;">Ocean of Blessings</h2>
+    <div class="subtitle">Select your avatar and send your wishes into the deep blue 💙</div>
+
+    <!-- 留言表达表单卡片 -->
+    <div class="message-form-card">
+      <div class="avatar-selection">
+        <label class="avatar-option">
+          <input type="radio" name="avatarType" value="bottle" checked>
+          <div class="avatar-card">
+            <img src="./bottle.png" alt="Bottle">
+            <span>Drift Bottle</span>
+          </div>
+        </label>
+        
+        <label class="avatar-option">
+          <input type="radio" name="avatarType" value="jellyfish">
+          <div class="avatar-card">
+            <img src="./jellyfish.png" alt="Jellyfish">
+            <span>Jellyfish</span>
+          </div>
+        </label>
+      </div>
+
+      <input type="text" id="msgNameInput" class="name-input" placeholder="Your Name / PLLI Nickname" maxlength="20" style="margin-top: 0;">
+      <textarea id="msgContentInput" class="msg-textarea" rows="3" placeholder="Write your birthday wishes for Yejun..." maxlength="200"></textarea>
+
+      <button class="btn btn-coral" onclick="releaseMessage()">Release to the Ocean 🌊</button>
+    </div>
+  </div>
+
+  <!-- 漂浮在海面上的留言元素区域 -->
+  <div id="messageOcean"></div>
+</div>
+
+
+<!-- ⚓ 网页底部署名区（共享） -->
 <div class="footer">
   <a class="footer-text" href="https://lit.link/en/mypllidduks" target="_blank" rel="noopener noreferrer">
     by <strong>MYPlliDduks</strong>
@@ -481,7 +593,7 @@ html, body {
     </div>
 
     <div class="disclaimer">
-      ⚠️ NOTICE: This boarding pass is a souvenir for PLLI. Official CSE venue entry requires showing your Gmail confirmation email and Reservation Name or SociaL Media ID.
+      ⚠️ NOTICE: This boarding pass is a souvenir for PLLI. Official CSE venue entry requires showing your Gmail confirmation email and Reservation Name or Social Media ID.
     </div>
 
     <button class="btn btn-coral" id="downloadBtn">Save / Download Ticket</button>
@@ -564,9 +676,7 @@ function animateParticles() {
 animateParticles();
 
 // ⏳ 2. 倒计时逻辑
-// 艺俊生日：韩国 09/12 00:00 = 马来西亚 09/11 23:00 (UTC+8)
 const TARGET_BIRTHDAY = new Date('2026-09-11T23:00:00+08:00').getTime();
-// 活动开始：马来西亚 09/19 11:00 (UTC+8)
 const TARGET_EVENT = new Date('2026-09-19T11:00:00+08:00').getTime();
 
 let currentTarget = TARGET_BIRTHDAY;
@@ -720,7 +830,7 @@ function swimMeymu() {
 }
 swimMeymu();
 
-// 点击 Meymu：翻转 360 度（无气泡对话框）
+// 点击 Meymu：翻转 360 度
 const meymuInner = document.getElementById('meymuInner');
 if (meymu) {
   meymu.addEventListener('click', (e) => {
@@ -799,6 +909,61 @@ if (downloadBtn) {
       }
     }
   });
+}
+
+// 🔀 3. 页面视图无缝切换逻辑 (保持音乐不中断)
+function switchView(targetView) {
+  const homeView = document.getElementById('homeView');
+  const messageView = document.getElementById('messageView');
+  
+  if (targetView === 'message') {
+    homeView.style.display = 'none';
+    messageView.style.display = 'block';
+  } else {
+    messageView.style.display = 'none';
+    homeView.style.display = 'block';
+  }
+}
+
+// 💌 4. 放飞留言逻辑
+function releaseMessage() {
+  const nameInput = document.getElementById('msgNameInput');
+  const contentInput = document.getElementById('msgContentInput');
+  
+  const name = nameInput.value.trim() || 'PLLI';
+  const content = contentInput.value.trim();
+  const selectedType = document.querySelector('input[name="avatarType"]:checked').value;
+
+  if (!content) {
+    alert("Please enter a birthday wish for Yejun! 💙");
+    return;
+  }
+
+  // 创建放飞的漂浮元素
+  const messageOcean = document.getElementById('messageOcean');
+  const item = document.createElement('div');
+  item.className = 'floating-message-item';
+  
+  // 随机出现位置 (避开最上面导航区域)
+  const posX = 10 + Math.random() * 75; // 10% ~ 85%
+  const posY = 35 + Math.random() * 50; // 35% ~ 85%
+  item.style.left = posX + '%';
+  item.style.top = posY + '%';
+
+  const imgSrc = selectedType === 'bottle' ? './bottle.png' : './jellyfish.png';
+  item.innerHTML = `<img src="${imgSrc}" alt="${selectedType}">`;
+
+  // 点击飘浮物可查看留言
+  item.addEventListener('click', (e) => {
+    e.stopPropagation();
+    alert(`💌 Message from ${name}:\n\n"${content}"`);
+  });
+
+  messageOcean.appendChild(item);
+
+  // 清空文本框
+  contentInput.value = '';
+  alert('Your wish has been released to the ocean! 🌊💙');
 }
 </script>
 </body>
