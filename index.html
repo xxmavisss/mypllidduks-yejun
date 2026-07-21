@@ -352,7 +352,7 @@ html, body {
    🔗 【配置文件路径】
 ============================================================================ */
 const BGM_URL = "./yejuncoverbgm.mp3"; 
-const PASSENGER_PHOTO_URL = "https://i.pinimg.com/564x/f9/f3/81/f9f38103e07ffff8bbdc219b42f1108e.jpg";
+const PASSENGER_PHOTO_URL = "./plli.jpg";
 
 const pImg = document.getElementById('passengerImg');
 if (pImg) pImg.src = PASSENGER_PHOTO_URL;
@@ -466,16 +466,29 @@ if (genBtn) {
   });
 }
 
+// 📸 优化后的船票下载逻辑
 const downloadBtn = document.getElementById('downloadBtn');
 if (downloadBtn) {
   downloadBtn.addEventListener('click', async () => {
     const card = document.getElementById('ticketCard');
     if (typeof html2canvas !== 'undefined' && card) {
-      const canvas = await html2canvas(card, { scale: 2, backgroundColor: '#FAF4E8', useCORS: true });
-      const a = document.createElement('a');
-      a.download = `Yejun_Birthday_Cafe_Ticket.png`;
-      a.href = canvas.toDataURL();
-      a.click();
+      try {
+        const canvas = await html2canvas(card, {
+          scale: 3,             // 提高分辨率，让生成的图片更清晰
+          backgroundColor: '#FAF4E8',
+          useCORS: true,        // 开启跨域允许
+          allowTaint: true,     // 允许画布包含跨域图像
+          logging: false
+        });
+        
+        const a = document.createElement('a');
+        a.download = `Yejun_Birthday_Cafe_Ticket.png`;
+        a.href = canvas.toDataURL('image/png');
+        a.click();
+      } catch (err) {
+        alert("下载船票时出错，请确认本地照片路径是否正确！");
+        console.error(err);
+      }
     }
   });
 }
