@@ -282,7 +282,7 @@ html, body {
 <div class="audio-panel">
   <div class="panel-title">Sound Studio</div>
   <div class="audio-row" id="bgmRow">
-    <div class="icon-btn">🎵</div>
+    <div class="icon-btn">🎧</div>
     <div>
       <div class="row-label">Yejun Playlist</div>
       <div class="row-sub" id="bgmSub">Tap to play</div>
@@ -294,7 +294,7 @@ html, body {
 <div class="header">
   <div class="eyebrow">Welcome Aboard</div>
   <h1 class="title">Whisper from the Deep Blue</h1>
-  <div class="subtitle">A Birthday Cafe for Yejun · Happy Birthday, Our Captain 🐬</div>
+  <div class="subtitle">🇲🇾 Birthday Cafe for Yejun · Happy Birthday, Our Captain 🐬💙</div>
 </div>
 
 <!-- 海洋舞台 -->
@@ -374,8 +374,8 @@ html, body {
     <button class="btn btn-coral" id="downloadBtn">📸 Save / Download Ticket</button>
 
     <div class="social-row">
-      <a class="btn btn-outline" href="https://twitter.com" target="_blank">🐦 Twitter / X</a>
-      <a class="btn btn-outline" href="https://instagram.com" target="_blank">📸 Instagram</a>
+      <a class="btn btn-outline" href="https://x.com/MYPlliDduks" target="_blank">🐦 Twitter / X</a>
+      <a class="btn btn-outline" href="https://www.instagram.com/mypllidduks/" target="_blank">📸 Instagram</a>
     </div>
   </div>
 </div>
@@ -420,7 +420,7 @@ if (bgmRow) {
         bgmRow.classList.add('playing');
         if (bgmSub) bgmSub.textContent = "Playing...";
       }).catch(err => {
-        alert("提示：未找到音频文件 yejuncoverbgm.mp3，请检查文件名！");
+        alert("提示：未找到音频文件 yejuncoverbgm.mp3，Please check！");
       });
     } else {
       bgmAudio.pause();
@@ -455,7 +455,7 @@ swimDolphin();
 
 // 点击海豚：翻转 360 度 + 气泡
 const dolphinInner = document.getElementById('dolphinInner');
-const msgs = ["HAPPY YEJUN DAY! 🎂", "Welcome to Asterum!", "May your ocean stay blue 💙", "PLLI ❤️ YEJUN"];
+const msgs = ["HAPPY YEJUN DAY! 🎂", "Welcome to Asterum!🌊", "NAM YEJUN!💙", "PLLI ❤️ YEJUN"];
 
 if (dolphin) {
   dolphin.addEventListener('click', (e) => {
