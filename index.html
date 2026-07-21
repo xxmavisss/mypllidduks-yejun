@@ -69,6 +69,12 @@
     }).then(() => {
       contentInput.value = '';
       alert('Your wish has been released to the ocean! 🌊💙');
+      
+      // 🌟 新增：发送成功后自动隐藏表单，方便查看海面
+      if (typeof window.toggleMsgForm === 'function') {
+        window.toggleMsgForm('hide');
+      }
+      
     }).catch((err) => {
       console.error(err);
       alert('发送失败，请检查网络或 Firebase 配置！');
@@ -341,6 +347,7 @@ html, body {
   padding: 80px 20px 40px; text-align: center;
 }
 .message-form-card {
+  position: relative; /* 为了让 X 按钮能定位到右上角 */
   background: var(--glass-bg); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
   border: 1px solid var(--glass-border); border-radius: 24px;
   padding: 24px 20px; margin-top: 20px; box-shadow: 0 20px 50px rgba(0,0,0,0.5);
@@ -374,6 +381,36 @@ html, body {
   resize: none; font-family: inherit;
 }
 .msg-textarea::placeholder { color: rgba(255,255,255,0.5); }
+
+/* 🌟 新增：留言板关闭按钮样式 */
+.form-close-btn {
+  position: absolute;
+  top: 14px;
+  right: 18px;
+  background: none;
+  border: none;
+  font-size: 18px;
+  color: rgba(255, 255, 255, 0.6);
+  cursor: pointer;
+  z-index: 10;
+  transition: color 0.2s;
+}
+.form-close-btn:hover {
+  color: var(--gold-bright);
+}
+
+/* 🌟 新增：重新打开留言板的悬浮按钮 */
+.reopen-form-btn {
+  position: fixed;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 50;
+  display: none; /* 默认隐藏 */
+  box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+  width: auto;
+  padding: 10px 24px;
+}
 
 /* 🌊 留言板海域（放置放飞的留言） */
 #messageOcean {
@@ -487,15 +524,32 @@ html, body {
   .meymu-wrapper { width: 100px; }
   .bottle-wrapper { width: 80px; }
   
-  /* 🌟 优化手机端留言板的上边距，防止跟顶部导航栏重叠 */
+  /* 🌟 优化手机端留言板的上边距和组件尺寸 */
   .message-view-container {
-    padding: 85px 15px 40px;
+    padding: 70px 15px 40px; 
   }
   .message-form-card {
-    padding: 18px 14px;
+    padding: 20px 14px 16px;
+    margin-top: 10px;
   }
   .avatar-card {
-    width: 85px; height: 95px;
+    width: 80px; height: 90px;
+  }
+  .avatar-card img {
+    width: 40px; height: 40px; margin-bottom: 5px;
+  }
+  .avatar-card span {
+    font-size: 11px;
+  }
+  .msg-textarea {
+    font-size: 12px;
+    padding: 10px;
+    margin-bottom: 12px;
+  }
+  .name-input {
+    font-size: 12px;
+    padding: 10px;
+    margin: 12px 0;
   }
 
   .ticket { flex-direction: column; }
@@ -607,7 +661,11 @@ html, body {
     <h2 class="title" style="font-size: 28px; margin: 0;">Ocean of Blessings</h2>
     <div class="subtitle">Choose your ocean companion and send your wishes into the deep blue.💙</div>
 
-    <div class="message-form-card">
+    <!-- 给卡片加上 id 方便 JS 控制 -->
+    <div class="message-form-card" id="msgFormCard">
+      <!-- 🌟 新增：关闭按钮 -->
+      <button class="form-close-btn" onclick="toggleMsgForm('hide')">✕</button>
+
       <div class="avatar-selection">
         <label class="avatar-option">
           <input type="radio" name="avatarType" value="bottle" checked>
@@ -629,9 +687,13 @@ html, body {
       <input type="text" id="msgNameInput" class="name-input" placeholder="Your Name / PLLI Nickname" maxlength="20" style="margin-top: 0;">
       <textarea id="msgContentInput" class="msg-textarea" rows="3" placeholder="Write your birthday wishes for Yejun..." maxlength="200"></textarea>
 
-      <!-- 注意这里调用全局挂载的 releaseMessage() -->
       <button class="btn btn-coral" onclick="releaseMessage()">Release to the Ocean 🌊</button>
     </div>
+
+    <!-- 🌟 新增：重新打开留言板的悬浮按钮 (默认隐藏) -->
+    <button class="btn btn-primary reopen-form-btn" id="reopenFormBtn" onclick="toggleMsgForm('show')">
+      ✍️ Write a Message
+    </button>
   </div>
 
   <div id="messageOcean"></div>
@@ -989,12 +1051,30 @@ if (downloadBtn) {
   });
 }
 
+// 🌟 新增：控制留言表单显示与隐藏
+window.toggleMsgForm = function(action) {
+  const formCard = document.getElementById('msgFormCard');
+  const reopenBtn = document.getElementById('reopenFormBtn');
+  
+  if (action === 'hide') {
+    formCard.style.display = 'none';
+    reopenBtn.style.display = 'inline-flex';
+  } else {
+    formCard.style.display = 'block';
+    reopenBtn.style.display = 'none';
+  }
+};
+
 window.switchView = function(targetView) {
   const homeView = document.getElementById('homeView');
   const messageView = document.getElementById('messageView');
   if (targetView === 'message') {
     homeView.style.display = 'none';
     messageView.style.display = 'block';
+    // 切换到留言板时确保表单是打开的
+    if (typeof window.toggleMsgForm === 'function') {
+        window.toggleMsgForm('show');
+    }
   } else {
     messageView.style.display = 'none';
     homeView.style.display = 'block';
