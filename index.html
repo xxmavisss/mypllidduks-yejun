@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
-<!-- html2canvas 用于下载船票 -->
+<!-- html2canvas 用于生成/下载船票图片 -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
 <style>
@@ -30,27 +30,29 @@ html, body {
   margin: 0; padding: 0; min-height: 100vh;
   font-family: 'Poppins', sans-serif;
   color: #fff;
-  background: var(--deep-blue);
+  /* 即使没有视频，默认也会显示唯美的海洋星空渐变背景 */
+  background: radial-gradient(circle at 50% 30%, #173B5C 0%, #0A192F 70%, #050C16 100%);
+  background-attachment: fixed;
   overflow-x: hidden;
 }
 
-/* 🌊 动态梦幻海洋背景 */
-.hero-bg {
-  position: fixed; inset: 0; z-index: -2;
-  background: linear-gradient(180deg, #091D2C 0%, #0E364A 40%, #154D63 70%, #1F6B7E 100%);
-}
-.hero-bg::after {
-  content: ''; position: absolute; inset: 0;
-  background: radial-gradient(circle at 50% 20%, rgba(245, 215, 139, 0.18) 0%, transparent 60%);
-  animation: bgGlow 8s ease-in-out infinite alternate;
-}
-@keyframes bgGlow {
-  0% { opacity: 0.5; }
-  100% { opacity: 1; }
+/* 🎥 背景视频全屏铺满 (如果未上传 mp4 则自动隐形) */
+.hero-video-bg {
+  position: fixed;
+  top: 0; left: 0; width: 100%; height: 100%;
+  object-fit: cover;
+  z-index: -2;
+  pointer-events: none;
 }
 
-/* 音频控制面板 (只留歌曲按钮) */
-/* 音频控制面板（PC 端默认） */
+/* 遮罩层：保持视觉暗调，防止文本看不清 */
+.video-overlay {
+  position: fixed; inset: 0; z-index: -1;
+  background: rgba(10, 25, 47, 0.45);
+  pointer-events: none;
+}
+
+/* 🎵 右上角音频控制面板 */
 .audio-panel {
   position: fixed; top: 18px; right: 18px; z-index: 80;
   background: var(--glass-bg);
@@ -85,7 +87,7 @@ html, body {
 /* Header 标题区 */
 .header {
   position: relative; z-index: 5; text-align: center;
-  padding: 85px 20px 10px; /* 增加顶部边距，留出顶部空间 */
+  padding: 85px 20px 10px;
 }
 .eyebrow { font-size: 11px; letter-spacing: 4px; text-transform: uppercase; color: var(--gold-bright); opacity: 0.9; }
 .title {
@@ -97,32 +99,6 @@ html, body {
 }
 .subtitle { font-size: 12px; color: rgba(255,255,255,0.85); font-weight: 300; }
 
-/* 📱 移动端/手机屏幕（宽度小于 600px 时自动启用以下精简样式） */
-@media (max-width: 600px) {
-  .audio-panel {
-    top: 12px; 
-    right: 12px;
-    padding: 6px 10px;
-    min-width: auto;
-    border-radius: 12px;
-  }
-  .audio-panel .panel-title {
-    display: none; /* 手机端隐藏 panel-title 标题，节省空间 */
-  }
-  .audio-row {
-    padding: 2px 4px;
-  }
-  .audio-row .row-label {
-    font-size: 10px;
-  }
-  .audio-row .row-sub {
-    font-size: 8px;
-  }
-  .header {
-    padding-top: 70px; /* 确保标题下移，绝对不会被顶部图标压到 */
-  }
-}
-
 /* 海域舞台 */
 .ocean-stage {
   position: relative; width: 100%; height: 55vh; min-height: 400px;
@@ -132,18 +108,21 @@ html, body {
 /* 🐬 海豚 */
 .dolphin-wrapper {
   position: absolute; left: 15%; top: 40%;
-  width: 110px; height: 110px; cursor: pointer; z-index: 10;
+  width: 120px; cursor: pointer; z-index: 10;
   transition: left 6s ease-in-out, top 6s ease-in-out;
 }
 .dolphin-inner {
-  width: 100%; height: 100%;
+  width: 100%;
   animation: dolphinFloat 3.5s ease-in-out infinite;
+}
+.dolphin-img {
+  width: 100%; height: auto; display: block;
+  filter: drop-shadow(0 8px 16px rgba(0,0,0,0.4));
 }
 @keyframes dolphinFloat {
   0%, 100% { transform: translateY(0) rotate(-3deg); }
   50% { transform: translateY(-14px) rotate(4deg); }
 }
-.dolphin-svg { width: 100%; height: 100%; filter: drop-shadow(0 8px 16px rgba(0,0,0,0.4)); }
 
 /* 寄语气泡 */
 .speech-bubble {
@@ -158,8 +137,12 @@ html, body {
 /* 🍾 漂流瓶 */
 .bottle-wrapper {
   position: absolute; left: 50%; bottom: 15%; transform: translateX(-50%);
-  width: 75px; height: 150px; cursor: pointer; z-index: 12;
+  width: 80px; cursor: pointer; z-index: 12;
   animation: bottleSway 4s ease-in-out infinite;
+}
+.bottle-img {
+  width: 100%; height: auto; display: block;
+  filter: drop-shadow(0 10px 20px rgba(0,0,0,0.5));
 }
 @keyframes bottleSway {
   0%, 100% { transform: translateX(-50%) translateY(0) rotate(-5deg); }
@@ -172,7 +155,7 @@ html, body {
   padding: 5px 12px; border-radius: 12px; border: 1px solid var(--glass-border);
 }
 
-/* Modal 弹窗 */
+/* Modal 弹窗基础 */
 .modal-overlay {
   position: fixed; inset: 0; z-index: 200;
   background: rgba(3, 10, 18, 0.75);
@@ -240,7 +223,16 @@ html, body {
 .social-row { display: flex; gap: 8px; margin-top: 10px; }
 .btn-outline { background: rgba(255,255,255,0.08); color: #fff; border: 1px solid rgba(255,255,255,0.25); text-decoration: none; font-size: 11px; }
 
-@media (max-width: 480px) {
+/* 📱 移动端屏幕适配 */
+@media (max-width: 600px) {
+  .audio-panel {
+    top: 12px; right: 12px; padding: 6px 10px; min-width: auto; border-radius: 12px;
+  }
+  .audio-panel .panel-title { display: none; }
+  .audio-row { padding: 2px 4px; }
+  .audio-row .row-label { font-size: 10px; }
+  .audio-row .row-sub { font-size: 8px; }
+  .header { padding-top: 70px; }
   .ticket { flex-direction: column; }
   .ticket-stub { width: 100%; border-left: none; border-top: 2px dashed #C5B396; }
 }
@@ -248,11 +240,14 @@ html, body {
 </head>
 <body>
 
-<div class="hero-bg"></div>
+<!-- 🎥 背景视频 (若存在 bgvideo.mp4 自动开启) -->
+<video class="hero-video-bg" autoplay loop muted playsinline onerror="this.style.display='none'">
+  <source src="./bgvideo.mp4" type="video/mp4">
+</video>
+<div class="video-overlay"></div>
 
 <!-- 音频轨 -->
 <audio id="bgmAudio" loop></audio>
-<!-- 🌊 绑定本地海浪音效文件 -->
 <audio id="wavesAudio" loop src="./seawavesbgm.mp3"></audio>
 
 <!-- 右上角声音面板 -->
@@ -267,50 +262,31 @@ html, body {
   </div>
 </div>
 
-<!-- Title -->
+<!-- 标题 -->
 <div class="header">
   <div class="eyebrow">Welcome Aboard</div>
-  <h1 class="title">Whisper from the Deep Blue</h1>
-  <div class="subtitle">🇲🇾 Birthday Cafe for Yejun · Happy Birthday, Our Leader 🐬</div>
+  <h1 class="title">Asterum Shore</h1>
+  <div class="subtitle">A Birthday Cafe for Yejun · Happy Birthday, Our Captain 🐬💙</div>
 </div>
 
 <!-- 海洋舞台 -->
 <div class="ocean-stage">
-  <!-- 🐬 自由游走海豚 -->
+  <!-- 🐬 你的 dolphin.png -->
   <div class="dolphin-wrapper" id="dolphin">
     <div class="speech-bubble" id="speechBubble">HAPPY YEJUN DAY! 🎂</div>
     <div class="dolphin-inner">
-      <svg class="dolphin-svg" viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg">
-        <path d="M10,80 Q30,20 100,15 Q160,10 190,35 Q170,45 150,40 Q120,60 80,62 Q40,70 10,80 Z" fill="url(#dGrad)"/>
-        <defs>
-          <linearGradient id="dGrad" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stop-color="#F5D78B"/>
-            <stop offset="50%" stop-color="#2D7A8F"/>
-            <stop offset="100%" stop-color="#0E364A"/>
-          </linearGradient>
-        </defs>
-        <circle cx="165" cy="28" r="3" fill="#0A192F"/>
-      </svg>
+      <img src="./dolphin.png" class="dolphin-img" alt="Dolphin" />
     </div>
   </div>
 
-  <!-- 🍾 真正的精美玻璃漂流瓶 -->
+  <!-- 🍾 你的 bottle.png -->
   <div class="bottle-wrapper" id="bottle">
-    <svg viewBox="0 0 100 200" xmlns="http://www.w3.org/2000/svg" style="width:100%; height:100%;">
-      <!-- 瓶塞 -->
-      <rect x="40" y="10" width="20" height="15" rx="3" fill="#D8A25E"/>
-      <!-- 瓶身 -->
-      <path d="M35,25 L65,25 L65,50 Q85,70 85,110 L85,170 Q85,185 70,185 L30,185 Q15,185 15,170 L15,110 Q15,70 35,25 Z" fill="rgba(255,255,255,0.18)" stroke="rgba(255,255,255,0.6)" stroke-width="2"/>
-      <!-- 瓶内卷轴信纸 -->
-      <rect x="35" y="100" width="30" height="50" rx="3" fill="#FAF4E8" transform="rotate(-10 50 125)"/>
-      <line x1="40" y1="112" x2="58" y2="108" stroke="#D8A25E" stroke-width="2" transform="rotate(-10 50 125)"/>
-      <line x1="40" y1="122" x2="55" y2="118" stroke="#D8A25E" stroke-width="2" transform="rotate(-10 50 125)"/>
-    </svg>
+    <img src="./bottle.png" class="bottle-img" alt="Drift Bottle" />
     <div class="bottle-hint">Click the drift bottle to unlock your message 🐬</div>
   </div>
 </div>
 
-<!-- 姓名输入 Modal -->
+<!-- 输入名字 Modal -->
 <div class="modal-overlay" id="nameModal">
   <div class="glass-card">
     <button class="modal-close" onclick="closeModal('nameModal')">✕</button>
@@ -322,7 +298,7 @@ html, body {
   </div>
 </div>
 
-<!-- 船票 Modal -->
+<!-- 船票展示 Modal -->
 <div class="modal-overlay" id="ticketModal">
   <div class="glass-card ticket-container">
     <button class="modal-close" onclick="closeModal('ticketModal')">✕</button>
@@ -339,7 +315,8 @@ html, body {
           <div class="route-code">YBC<div style="font-size:8px; font-weight:400; color:#7A6B53;">YEJUN CAFE</div></div>
         </div>
         <div class="ticket-body">
-          <img id="passengerImg" class="passenger-img" alt="Yejun/Cafe Photo" />
+          <!-- 你的 plli.jpg -->
+          <img id="passengerImg" class="passenger-img" alt="PLLI Photo" />
           <div>
             <div class="field-label">Passenger</div>
             <div class="field-value" id="pName">GUEST</div>
@@ -368,25 +345,23 @@ html, body {
     <button class="btn btn-coral" id="downloadBtn">📸 Save / Download Ticket</button>
 
     <div class="social-row">
-      <a class="btn btn-outline" id="twitterLink" href="https://x.com/MYPlliDduks" target="_blank">Twitter / X</a>
-      <a class="btn btn-outline" id="instagramLink" href="https://www.instagram.com/mypllidduks/" target="_blank">Instagram</a>
+      <a class="btn btn-outline" id="twitterLink" href="https://twitter.com" target="_blank">🐦 Twitter / X</a>
+      <a class="btn btn-outline" id="instagramLink" href="https://instagram.com" target="_blank">📸 Instagram</a>
     </div>
   </div>
 </div>
 
 <script>
 /* ============================================================================
-   🔗 【配置文件路径】
+   🔗 【文件路径映射】
 ============================================================================ */
 const BGM_URL = "./yejuncoverbgm.mp3"; 
-const PASSENGER_PHOTO_URL = "./plli.jpg";
+const PASSENGER_PHOTO_URL = "./plli.jpg"; // 使用你的 plli.jpg
 
 const pImg = document.getElementById('passengerImg');
 if (pImg) pImg.src = PASSENGER_PHOTO_URL;
 
-/* ============================================================================
-   🌊 本地海浪背景声自动播放逻辑
-============================================================================ */
+/* 🌊 海浪音效逻辑 */
 const wavesAudio = document.getElementById('wavesAudio');
 let wavesStarted = false;
 
@@ -400,18 +375,13 @@ function startWaves() {
   }).catch(() => {});
 }
 
-if (wavesAudio) {
-  wavesAudio.volume = 0.5; // 设置适中的背景音量
-}
+if (wavesAudio) wavesAudio.volume = 0.5;
 
-// 用户只要有任何基础动作（点击、滑动、移动鼠标），立刻播放海浪声
 ['click', 'touchstart', 'mousemove', 'scroll', 'keydown'].forEach(evt => {
   window.addEventListener(evt, startWaves, { once: true });
 });
 
-/* ============================================================================
-   🎵 BGM Playlist 控制
-============================================================================ */
+/* 🎵 BGM 逻辑 */
 const bgmAudio = document.getElementById('bgmAudio');
 const bgmRow = document.getElementById('bgmRow');
 const bgmSub = document.getElementById('bgmSub');
@@ -421,13 +391,12 @@ if (bgmAudio) bgmAudio.src = BGM_URL;
 if (bgmRow) {
   bgmRow.addEventListener('click', () => {
     if (!bgmAudio) return;
-    
     if (bgmAudio.paused) {
       bgmAudio.play().then(() => {
         bgmRow.classList.add('playing');
         if (bgmSub) bgmSub.textContent = "Playing...";
       }).catch(err => {
-        alert("无法播放！请检查 yejuncoverbgm.mp3 是否和 index.html 放在同一个文件夹内。");
+        alert("无法播放！请确认 yejuncoverbgm.mp3 文件是否存在。");
       });
     } else {
       bgmAudio.pause();
@@ -437,9 +406,7 @@ if (bgmRow) {
   });
 }
 
-/* ============================================================================
-   🐬 界面互动动画
-============================================================================ */
+/* 🐬 海豚随机游走 */
 const dolphin = document.getElementById('dolphin');
 function swim() {
   if (!dolphin) return;
@@ -463,6 +430,7 @@ if (dolphin) {
   });
 }
 
+/* 🍾 漂流瓶点击 */
 const bottle = document.getElementById('bottle');
 if (bottle) {
   bottle.addEventListener('click', () => {
@@ -476,6 +444,7 @@ function closeModal(id) {
   if (modal) modal.classList.remove('open'); 
 }
 
+/* 🎫 生成船票 */
 const genBtn = document.getElementById('genBtn');
 if (genBtn) {
   genBtn.addEventListener('click', () => {
@@ -493,7 +462,7 @@ if (genBtn) {
   });
 }
 
-// 📸 优化后的船票下载逻辑
+/* 📸 船票本地高清晰度渲染下载 */
 const downloadBtn = document.getElementById('downloadBtn');
 if (downloadBtn) {
   downloadBtn.addEventListener('click', async () => {
@@ -501,20 +470,14 @@ if (downloadBtn) {
     if (typeof html2canvas !== 'undefined' && card) {
       try {
         const canvas = await html2canvas(card, {
-          scale: 3,             // 提高分辨率，让生成的图片更清晰
-          backgroundColor: '#FAF4E8',
-          useCORS: true,        // 开启跨域允许
-          allowTaint: true,     // 允许画布包含跨域图像
-          logging: false
+          scale: 3, backgroundColor: '#FAF4E8', useCORS: true, allowTaint: true, logging: false
         });
-        
         const a = document.createElement('a');
         a.download = `Yejun_Birthday_Cafe_Ticket.png`;
         a.href = canvas.toDataURL('image/png');
         a.click();
       } catch (err) {
-        alert("下载船票时出错，请确认本地照片路径是否正确！");
-        console.error(err);
+        alert("下载失败，请检查 plli.jpg 是否存在！");
       }
     }
   });
