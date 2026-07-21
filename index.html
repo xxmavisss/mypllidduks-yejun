@@ -12,9 +12,132 @@
 <!-- html2canvas 用于生成/下载船票图片 -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
-<!-- Firebase SDK (Compat 版本) -->
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<!-- 🔥 使用更稳定的 Firebase v10 模块化 CDN -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+  import { getDatabase, ref, push, onValue, remove } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+  // 1. 你的真实 Firebase 配置
+  const firebaseConfig = {
+    apiKey: "AIzaSyAJwhXT6yxv39D6IZkYjDp0ABQkNQyORP0",
+    authDomain: "mpd-yejun.firebaseapp.com",
+    databaseURL: "https://mpd-yejun-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "mpd-yejun",
+    storageBucket: "mpd-yejun.firebasestorage.app",
+    messagingSenderId: "993160358521",
+    appId: "1:993160358521:web:82387a954c03e8ae4782a8",
+    measurementId: "G-EFDFDRR910"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+  const messagesRef = ref(db, 'messages');
+
+  // 🔑 管理员暗号设置
+  const ADMIN_PASSWORD = "yejun0912"; 
+  let isAdmin = false;
+
+  window.addEventListener('keydown', (e) => {
+    if (e.ctrlKey && e.shiftKey && e.key === 'A') {
+      toggleAdminMode();
+    }
+  });
+
+  let titleClickCount = 0;
+  const titleEl = document.querySelector('.title');
+  if (titleEl) {
+    titleEl.addEventListener('click', () => {
+      titleClickCount++;
+      if (titleClickCount >= 5) {
+        toggleAdminMode();
+        titleClickCount = 0;
+      }
+    });
+  }
+
+  function toggleAdminMode() {
+    if (!isAdmin) {
+      const pwd = prompt("🔐 请输入管理员密码/暗号以启用删除功能：");
+      if (pwd === ADMIN_PASSWORD) {
+        isAdmin = true;
+        alert("✅ 已进入管理员模式！现在点击海面上的漂流瓶或水母即可进行删除。");
+      } else if (pwd !== null) {
+        alert("❌ 密码错误！");
+      }
+    } else {
+      isAdmin = false;
+      alert("🔒 已退出管理员模式。");
+    }
+  }
+
+  // 挂载到全局供 HTML 调用
+  window.releaseMessage = function() {
+    const nameInput = document.getElementById('msgNameInput');
+    const contentInput = document.getElementById('msgContentInput');
+    
+    const name = nameInput.value.trim() || 'PLLI';
+    const content = contentInput.value.trim();
+    const selectedType = document.querySelector('input[name="avatarType"]:checked').value;
+
+    if (!content) {
+      alert("Please enter a birthday wish for Yejun! 💙");
+      return;
+    }
+
+    push(messagesRef, {
+      name: name,
+      content: content,
+      type: selectedType,
+      posX: 10 + Math.random() * 75,
+      posY: 35 + Math.random() * 50,
+      timestamp: Date.now()
+    }).then(() => {
+      contentInput.value = '';
+      alert('Your wish has been released to the ocean! 🌊💙');
+    }).catch((err) => {
+      alert('发送失败，请检查网络或 Firebase 配置！');
+    });
+  };
+
+  // 实时监听并渲染海面上的所有留言
+  onValue(messagesRef, (snapshot) => {
+    const messageOcean = document.getElementById('messageOcean');
+    if (!messageOcean) return;
+    messageOcean.innerHTML = '';
+
+    const data = snapshot.val();
+    if (!data) return;
+
+    Object.keys(data).forEach((key) => {
+      const msg = data[key];
+      
+      const item = document.createElement('div');
+      item.className = 'floating-message-item';
+      item.style.left = msg.posX + '%';
+      item.style.top = msg.posY + '%';
+
+      const imgSrc = msg.type === 'bottle' ? './bottle.png' : './jellyfish.png';
+      item.innerHTML = `<img src="${imgSrc}" alt="${msg.type}">`;
+
+      item.addEventListener('click', (e) => {
+        e.stopPropagation();
+        
+        if (isAdmin) {
+          const confirmDelete = confirm(`🔑 [管理员模式]\n\n留言内容："${msg.content}"\n来自：${msg.name}\n\n⚠️ 是否确定删掉这条留言？`);
+          if (confirmDelete) {
+            remove(ref(db, `messages/${key}`)).then(() => {
+              alert('❌ 留言已成功删除！');
+            });
+          }
+        } else {
+          alert(`💌 Message from ${msg.name}:\n\n"${msg.content}"`);
+        }
+      });
+
+      messageOcean.appendChild(item);
+    });
+  });
+</script>
 
 <style>
 :root {
@@ -404,10 +527,9 @@ html, body {
   </video>
 </div>
 
-<!-- 顶部导航区（左侧：Leave a Message 按钮；右侧：其他菜单与音乐） -->
+<!-- 顶部导航区 -->
 <div class="top-nav">
   <div class="nav-actions">
-    <!-- ✉️ 放在左上角的留言按钮 -->
     <button class="nav-btn btn-highlight" onclick="switchView('message')">
       ✉️ <span>Leave a Message</span>
     </button>
@@ -417,7 +539,6 @@ html, body {
     <a class="nav-btn" href="https://forms.gle/FpWn4BuPp7VAon7W8" target="_blank">🛍️ <span>Get Kit</span></a>
     <a class="nav-btn" href="https://t.me/+QfZM4CksHfM2ZjVl" target="_blank">🌐 <span>Updates</span></a>
     
-    <!-- 音频控制 -->
     <div class="audio-panel">
       <div class="audio-row" id="bgmRow">
         <div class="icon-btn">🎧</div>
@@ -439,13 +560,11 @@ html, body {
 <!-- 🏠 视图 1：主页甲板 (Home View) -->
 <!-- =================================================== -->
 <div id="homeView">
-  <!-- 标题与倒计时区 -->
   <div class="header">
     <div class="eyebrow">Welcome Aboard</div>
     <h1 class="title">Whisper from the Deep Blue</h1>
     <div class="subtitle">🇲🇾 Birthday Cafe for Yejun · Happy Birthday, Our Leader 🐬💙</div>
 
-    <!-- ⏳ 倒计时组件 -->
     <div class="timer-container">
       <div class="timer-tabs">
         <button class="tab-btn active" id="tabBirthday" onclick="switchTimer('birthday')">🎂 Yejun's Birthday (09/12 KST)</button>
@@ -463,9 +582,7 @@ html, body {
     </div>
   </div>
 
-  <!-- 海洋舞台 -->
   <div class="ocean-stage">
-    <!-- 🐬 海豚 -->
     <div class="dolphin-wrapper" id="dolphin">
       <div class="speech-bubble" id="speechBubble">HAPPY YEJUN DAY! 🎂</div>
       <div class="dolphin-flip" id="dolphinFlip">
@@ -475,14 +592,12 @@ html, body {
       </div>
     </div>
 
-    <!-- 🐬 Meymu -->
     <div class="meymu-wrapper" id="meymu">
       <div class="meymu-inner" id="meymuInner">
         <img src="./meymu.png" class="meymu-img" alt="Meymu" />
       </div>
     </div>
 
-    <!-- 🍾 漂流瓶 -->
     <div class="bottle-wrapper" id="bottle">
       <div class="bottle-inner">
         <img src="./bottle.png" class="bottle-img" alt="Drift Bottle" />
@@ -504,7 +619,6 @@ html, body {
     <h2 class="title" style="font-size: 28px; margin: 0;">Ocean of Blessings</h2>
     <div class="subtitle">Select your avatar and send your wishes into the deep blue 💙</div>
 
-    <!-- 留言表达表单卡片 -->
     <div class="message-form-card">
       <div class="avatar-selection">
         <label class="avatar-option">
@@ -527,23 +641,23 @@ html, body {
       <input type="text" id="msgNameInput" class="name-input" placeholder="Your Name / PLLI Nickname" maxlength="20" style="margin-top: 0;">
       <textarea id="msgContentInput" class="msg-textarea" rows="3" placeholder="Write your birthday wishes for Yejun..." maxlength="200"></textarea>
 
+      <!-- 注意这里调用全局挂载的 releaseMessage() -->
       <button class="btn btn-coral" onclick="releaseMessage()">Release to the Ocean 🌊</button>
     </div>
   </div>
 
-  <!-- 漂浮在海面上的留言元素区域 -->
   <div id="messageOcean"></div>
 </div>
 
 
-<!-- ⚓ 网页底部署名区（共享） -->
+<!-- ⚓ 网页底部署名区 -->
 <div class="footer">
   <a class="footer-text" href="https://lit.link/en/mypllidduks" target="_blank" rel="noopener noreferrer">
     by <strong>MYPlliDduks</strong>
   </a>
 </div>
 
-<!-- 输入名字 Modal -->
+<!-- Modal 弹窗 -->
 <div class="modal-overlay" id="nameModal">
   <div class="glass-card">
     <button class="modal-close" onclick="closeModal('nameModal')">✕</button>
@@ -555,7 +669,6 @@ html, body {
   </div>
 </div>
 
-<!-- 船票展示 Modal -->
 <div class="modal-overlay" id="ticketModal">
   <div class="glass-card ticket-container">
     <button class="modal-close" onclick="closeModal('ticketModal')">✕</button>
@@ -618,64 +731,14 @@ html, body {
 </div>
 
 <script>
-// 🔥 初始化 Firebase 配置
-const firebaseConfig = {
-  apiKey: "AIzaSyAJwhXT6yxv39D6IZkYjDp0ABQkNQyORP0",
-  authDomain: "mpd-yejun.firebaseapp.com",
-  databaseURL: "https://mpd-yejun-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "mpd-yejun",
-  storageBucket: "mpd-yejun.firebasestorage.app",
-  messagingSenderId: "993160358521",
-  appId: "1:993160358521:web:82387a954c03e8ae4782a8",
-  measurementId: "G-EFDFDRR910"
-};
-firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
-const messagesRef = db.ref('messages');
-
-// 🔑 管理员暗号设置 (默认密码 "yejun0912")
-const ADMIN_PASSWORD = "yejun0912"; 
-let isAdmin = false;
-
-// 触发管理员模式：电脑端按 Ctrl + Shift + A，手机端连续点击标题5次
-window.addEventListener('keydown', (e) => {
-  if (e.ctrlKey && e.shiftKey && e.key === 'A') {
-    toggleAdminMode();
-  }
-});
-
-let titleClickCount = 0;
-document.querySelector('.title').addEventListener('click', () => {
-  titleClickCount++;
-  if (titleClickCount >= 5) {
-    toggleAdminMode();
-    titleClickCount = 0;
-  }
-});
-
-function toggleAdminMode() {
-  if (!isAdmin) {
-    const pwd = prompt("🔐 请输入管理员密码/暗号以启用删除功能：");
-    if (pwd === ADMIN_PASSWORD) {
-      isAdmin = true;
-      alert("✅ 已进入管理员模式！现在点击海面上的漂流瓶或水母即可进行删除。");
-    } else if (pwd !== null) {
-      alert("❌ 密码错误！");
-    }
-  } else {
-    isAdmin = false;
-    alert("🔒 已退出管理员模式。");
-  }
-}
-
-// 配置文件路径
+// 常规 UI 逻辑
 const BGM_URL = "./yejuncoverbgm.mp3"; 
 const PASSENGER_PHOTO_URL = "./plli.jpg"; 
 
 const pImg = document.getElementById('passengerImg');
 if (pImg) pImg.src = PASSENGER_PHOTO_URL;
 
-// ✨ 1. 鼠标跟随星光尾迹 (Cursor Particle Effect)
+// ✨ 鼠标跟随星光尾迹
 const canvas = document.getElementById('trailCanvas');
 const ctx = canvas.getContext('2d');
 let particles = [];
@@ -717,7 +780,6 @@ function handlePointer(x, y) {
     particles.push(new Particle(x, y));
   }
 }
-
 window.addEventListener('mousemove', (e) => handlePointer(e.clientX, e.clientY));
 window.addEventListener('touchmove', (e) => {
   if(e.touches.length > 0) handlePointer(e.touches[0].clientX, e.touches[0].clientY);
@@ -737,13 +799,12 @@ function animateParticles() {
 }
 animateParticles();
 
-// ⏳ 2. 倒计时逻辑
+// ⏳ 倒计时逻辑
 const TARGET_BIRTHDAY = new Date('2026-09-11T23:00:00+08:00').getTime();
 const TARGET_EVENT = new Date('2026-09-19T11:00:00+08:00').getTime();
-
 let currentTarget = TARGET_BIRTHDAY;
 
-function switchTimer(type) {
+window.switchTimer = function(type) {
   const btnBday = document.getElementById('tabBirthday');
   const btnEvt = document.getElementById('tabEvent');
   if (type === 'birthday') {
@@ -756,7 +817,7 @@ function switchTimer(type) {
     btnBday.classList.remove('active');
   }
   updateTimer();
-}
+};
 
 function updateTimer() {
   const now = new Date().getTime();
@@ -783,27 +844,22 @@ function updateTimer() {
 setInterval(updateTimer, 1000);
 updateTimer();
 
-// 🌊 海浪音效自动播放
+// 🌊 海浪与音乐
 const wavesAudio = document.getElementById('wavesAudio');
 let wavesStarted = false;
-
 function startWaves() {
   if (wavesStarted || !wavesAudio) return;
   wavesAudio.play().then(() => { wavesStarted = true; }).catch(() => {});
 }
 if (wavesAudio) wavesAudio.volume = 0.5;
-
 ['click', 'touchstart', 'mousemove', 'keydown'].forEach(evt => {
   window.addEventListener(evt, startWaves, { once: true });
 });
 
-// 🎵 BGM 播放器
 const bgmAudio = document.getElementById('bgmAudio');
 const bgmRow = document.getElementById('bgmRow');
 const bgmSub = document.getElementById('bgmSub');
-
 if (bgmAudio) bgmAudio.src = BGM_URL;
-
 if (bgmRow) {
   bgmRow.addEventListener('click', () => {
     if (!bgmAudio) return;
@@ -822,35 +878,26 @@ if (bgmRow) {
   });
 }
 
-// 🐬 海豚智能游走与转向
+// 🐬 海豚、Meymu、漂流瓶游走
 const dolphin = document.getElementById('dolphin');
 const dolphinFlip = document.getElementById('dolphinFlip');
 let currentDolphinX = 20;
-
 function swimDolphin() {
   if (!dolphin) return;
   const nextX = 5 + Math.random() * 60;
   const nextY = 10 + Math.random() * 50;
-  
   if (dolphinFlip) {
-    if (nextX < currentDolphinX) {
-      dolphinFlip.style.transform = 'scaleX(-1)';
-    } else {
-      dolphinFlip.style.transform = 'scaleX(1)';
-    }
+    dolphinFlip.style.transform = (nextX < currentDolphinX) ? 'scaleX(-1)' : 'scaleX(1)';
   }
-  
   currentDolphinX = nextX;
   dolphin.style.left = nextX + '%';
   dolphin.style.top = nextY + '%';
-  
   setTimeout(swimDolphin, 6000);
 }
 swimDolphin();
 
 const dolphinInner = document.getElementById('dolphinInner');
 const msgs = ["HAPPY YEJUN DAY! 🎂", "Welcome to Asterum!🌊", "NAM YEJUN!💙", "PLLI ❤️ YEJUN"];
-
 if (dolphin) {
   dolphin.addEventListener('click', (e) => {
     e.stopPropagation();
@@ -858,7 +905,6 @@ if (dolphin) {
       dolphinInner.classList.add('flip-spin');
       setTimeout(() => dolphinInner.classList.remove('flip-spin'), 800);
     }
-
     const bubble = document.getElementById('speechBubble');
     if (bubble) {
       bubble.textContent = msgs[Math.floor(Math.random() * msgs.length)];
@@ -868,25 +914,16 @@ if (dolphin) {
   });
 }
 
-// 🐬 Meymu 智能游走与转向
 const meymu = document.getElementById('meymu');
 let currentMeymuX = 65;
-
 function swimMeymu() {
   if (!meymu) return;
   const nextX = 5 + Math.random() * 60;
   const nextY = 10 + Math.random() * 50;
-
-  if (nextX < currentMeymuX) {
-    meymu.style.transform = 'scaleX(-1)';
-  } else {
-    meymu.style.transform = 'scaleX(1)';
-  }
-
+  meymu.style.transform = (nextX < currentMeymuX) ? 'scaleX(-1)' : 'scaleX(1)';
   currentMeymuX = nextX;
   meymu.style.left = nextX + '%';
   meymu.style.top = nextY + '%';
-
   setTimeout(swimMeymu, 6000);
 }
 swimMeymu();
@@ -902,16 +939,13 @@ if (meymu) {
   });
 }
 
-// 🍾 漂流瓶游走
 const bottle = document.getElementById('bottle');
 function floatBottle() {
   if (!bottle) return;
   const nextX = 10 + Math.random() * 70;
   const nextY = 30 + Math.random() * 45;
-  
   bottle.style.left = nextX + '%';
   bottle.style.top = nextY + '%';
-  
   setTimeout(floatBottle, 8000);
 }
 floatBottle();
@@ -923,34 +957,30 @@ if (bottle) {
   });
 }
 
-function openModal(id) {
+window.openModal = function(id) {
   const modal = document.getElementById(id);
   if (modal) modal.classList.add('open');
-}
+};
 
-function closeModal(id) { 
+window.closeModal = function(id) { 
   const modal = document.getElementById(id);
   if (modal) modal.classList.remove('open'); 
-}
+};
 
-// 🎫 生成船票
 const genBtn = document.getElementById('genBtn');
 if (genBtn) {
   genBtn.addEventListener('click', () => {
     const input = document.getElementById('nameInput');
     const name = (input && input.value.trim()) ? input.value.trim() : "PLLI";
-    
     const pName = document.getElementById('pName');
     const stubPName = document.getElementById('stubPName');
     if (pName) pName.textContent = name.toUpperCase();
     if (stubPName) stubPName.textContent = name.toUpperCase();
-    
     closeModal('nameModal');
     openModal('ticketModal');
   });
 }
 
-// 📸 船票下载
 const downloadBtn = document.getElementById('downloadBtn');
 if (downloadBtn) {
   downloadBtn.addEventListener('click', async () => {
@@ -971,11 +1001,9 @@ if (downloadBtn) {
   });
 }
 
-// 🔀 页面视图无缝切换逻辑 (保持音乐不中断)
-function switchView(targetView) {
+window.switchView = function(targetView) {
   const homeView = document.getElementById('homeView');
   const messageView = document.getElementById('messageView');
-  
   if (targetView === 'message') {
     homeView.style.display = 'none';
     messageView.style.display = 'block';
@@ -983,74 +1011,7 @@ function switchView(targetView) {
     messageView.style.display = 'none';
     homeView.style.display = 'block';
   }
-}
-
-// 🔥 Firebase 实时写入（发送留言）
-function releaseMessage() {
-  const nameInput = document.getElementById('msgNameInput');
-  const contentInput = document.getElementById('msgContentInput');
-  
-  const name = nameInput.value.trim() || 'PLLI';
-  const content = contentInput.value.trim();
-  const selectedType = document.querySelector('input[name="avatarType"]:checked').value;
-
-  if (!content) {
-    alert("Please enter a birthday wish for Yejun! 💙");
-    return;
-  }
-
-  messagesRef.push({
-    name: name,
-    content: content,
-    type: selectedType,
-    posX: 10 + Math.random() * 75,
-    posY: 35 + Math.random() * 50,
-    timestamp: Date.now()
-  }).then(() => {
-    contentInput.value = '';
-    alert('Your wish has been released to the ocean! 🌊💙');
-  }).catch((err) => {
-    alert('发送失败，请检查 Firebase 配置！');
-  });
-}
-
-// 🔥 Firebase 实时监听并渲染海面上的所有留言（含删除功能）
-messagesRef.on('value', (snapshot) => {
-  const messageOcean = document.getElementById('messageOcean');
-  messageOcean.innerHTML = '';
-
-  const data = snapshot.val();
-  if (!data) return;
-
-  Object.keys(data).forEach((key) => {
-    const msg = data[key];
-    
-    const item = document.createElement('div');
-    item.className = 'floating-message-item';
-    item.style.left = msg.posX + '%';
-    item.style.top = msg.posY + '%';
-
-    const imgSrc = msg.type === 'bottle' ? './bottle.png' : './jellyfish.png';
-    item.innerHTML = `<img src="${imgSrc}" alt="${msg.type}">`;
-
-    item.addEventListener('click', (e) => {
-      e.stopPropagation();
-      
-      if (isAdmin) {
-        const confirmDelete = confirm(`🔑 [管理员模式]\n\n留言内容："${msg.content}"\n来自：${msg.name}\n\n⚠️ 是否确定删掉这条留言？`);
-        if (confirmDelete) {
-          db.ref(`messages/${key}`).remove().then(() => {
-            alert('❌ 留言已成功删除！');
-          });
-        }
-      } else {
-        alert(`💌 Message from ${msg.name}:\n\n"${msg.content}"`);
-      }
-    });
-
-    messageOcean.appendChild(item);
-  });
-});
+};
 </script>
 </body>
 </html>
