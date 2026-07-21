@@ -158,7 +158,8 @@ html, body {
 /* 🐬 海豚 */
 .dolphin-wrapper {
   position: absolute; left: 20%; top: 25%;
-  width: 200px; cursor: pointer; z-index: 20;
+  width: 140px; /* 👈 原来是 200px，改小了 */
+  cursor: pointer; z-index: 20;
   transition: left 6s ease-in-out, top 6s ease-in-out, transform 0.5s ease-in-out;
 }
 .dolphin-flip {
@@ -188,7 +189,8 @@ html, body {
 /* 🐬 Meymu */
 .meymu-wrapper {
   position: absolute; left: 65%; top: 40%;
-  width: 240px; cursor: pointer; z-index: 20;
+  width: 160px; /* 👈 原来是 240px，改小了 */
+  cursor: pointer; z-index: 20;
   transition: left 6s ease-in-out, top 6s ease-in-out, transform 0.5s ease-in-out;
 }
 .meymu-inner {
@@ -313,9 +315,11 @@ html, body {
   .nav-btn span { display: none; }
   .header { padding-top: 65px; }
   .ocean-stage { height: 50vh; min-height: 300px; }
-  .dolphin-wrapper { width: 120px; }
-  .meymu-wrapper { width: 140px; }
-  .bottle-wrapper { width: 100px; }
+  
+  .dolphin-wrapper { width: 90px; }  /* 手机端海豚 */
+  .meymu-wrapper { width: 100px; }   /* 手机端Meymu */
+  .bottle-wrapper { width: 80px; }
+  
   .ticket { flex-direction: column; }
   .ticket-stub { width: 100%; border-left: none; border-top: 2px dashed #C5B396; }
 }
