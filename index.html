@@ -27,7 +27,6 @@
 
 * { box-sizing: border-box; }
 
-/* 🚨 关键修改：body 背景强制设为透明，透出最底层的 mp4 视频 */
 html, body {
   margin: 0; padding: 0; min-height: 100vh;
   font-family: 'Poppins', sans-serif;
@@ -36,56 +35,72 @@ html, body {
   overflow-x: hidden;
 }
 
-/* 🎥 背景视频容器（定位到最底层） */
+/* ✨ 鼠标尾迹 Canvas */
+#trailCanvas {
+  position: fixed; top: 0; left: 0;
+  width: 100vw; height: 100vh;
+  pointer-events: none;
+  z-index: 99;
+}
+
+/* 🎥 背景视频容器 */
 .hero-bg {
   position: fixed; 
   top: 0; left: 0; 
   width: 100vw; height: 100vh;
   z-index: -1; 
   overflow: hidden;
-  background: #0A192F; /* 视频加载前的备用蓝色 */
+  background: #0A192F;
 }
 
 .hero-bg video {
-  width: 100%;
-  height: 100%;
-  object-fit: cover; /* 铺满屏幕且不拉伸 */
-  position: absolute;
-  top: 0;
-  left: 0;
+  width: 100%; height: 100%;
+  object-fit: cover; position: absolute; top: 0; left: 0;
 }
 
-/* 🌟 极薄遮罩（防止背景太亮影响文字阅读） */
 .hero-bg::after {
-  content: ''; 
-  position: absolute; 
-  inset: 0;
+  content: ''; position: absolute; inset: 0;
   background: rgba(10, 25, 47, 0.2); 
   pointer-events: none;
 }
 
-/* 🎵 右上角音频控制面板 */
-.audio-panel {
-  position: fixed; top: 18px; right: 18px; z-index: 100;
-  background: var(--glass-bg);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid var(--glass-border);
-  border-radius: 18px; padding: 10px 14px;
-  box-shadow: 0 12px 32px rgba(0,0,0,0.4);
-  min-width: 160px;
+/* 顶部导航栏布局 */
+.top-nav {
+  position: fixed; top: 18px; left: 18px; right: 18px;
+  display: flex; justify-content: space-between; align-items: center;
+  z-index: 100; pointer-events: none;
 }
-.audio-panel .panel-title {
-  font-size: 10px; letter-spacing: 2px; text-transform: uppercase;
-  color: var(--gold-bright); font-weight: 700; margin-bottom: 4px;
+
+/* ↗️ 右上角/快捷菜单与声音面板 */
+.nav-actions {
+  display: flex; gap: 10px; align-items: center;
+  pointer-events: auto; margin-left: auto;
+}
+
+.nav-btn {
+  background: var(--glass-bg);
+  backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--glass-border);
+  color: #fff; text-decoration: none; font-size: 11px; font-weight: 500;
+  padding: 8px 14px; border-radius: 16px; transition: all 0.2s;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.3); display: flex; align-items: center; gap: 5px;
+}
+.nav-btn:hover {
+  background: rgba(23, 74, 91, 0.85); border-color: var(--gold-bright);
+  transform: translateY(-2px);
+}
+
+.audio-panel {
+  background: var(--glass-bg);
+  backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--glass-border);
+  border-radius: 18px; padding: 6px 12px;
+  box-shadow: 0 12px 32px rgba(0,0,0,0.4);
 }
 .audio-row {
-  display: flex; align-items: center; gap: 8px;
-  cursor: pointer; padding: 4px 6px; border-radius: 10px;
-  transition: background 0.2s;
+  display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 2px 4px;
   user-select: none;
 }
-.audio-row:hover { background: rgba(255,255,255,0.08); }
 .audio-row .icon-btn {
   width: 26px; height: 26px; border-radius: 50%;
   background: linear-gradient(135deg, var(--gold-accent), #B8863F);
@@ -99,24 +114,45 @@ html, body {
 /* Header 标题区 */
 .header {
   position: relative; z-index: 5; text-align: center;
-  padding: 70px 20px 10px;
-  pointer-events: none;
+  padding: 80px 20px 10px; pointer-events: none;
 }
 .eyebrow { font-size: 11px; letter-spacing: 4px; text-transform: uppercase; color: var(--gold-bright); opacity: 0.9; }
 .title {
   font-family: 'Cinzel', serif; font-weight: 700;
-  font-size: clamp(24px, 5vw, 48px); margin: 8px 0;
+  font-size: clamp(24px, 5vw, 48px); margin: 6px 0;
   background: linear-gradient(180deg, #FFFFFF 30%, var(--gold-bright) 100%);
   -webkit-background-clip: text; background-clip: text; color: transparent;
   text-shadow: 0 4px 20px rgba(0,0,0,0.4);
-  -webkit-font-smoothing: antialiased;
 }
 .subtitle { font-size: 12px; color: rgba(255,255,255,0.85); font-weight: 300; }
 
+/* ⏳ 倒计时牌样式 */
+.timer-container {
+  margin: 16px auto 0;
+  display: inline-flex; flex-direction: column; align-items: center;
+  background: var(--glass-bg); backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border); padding: 10px 20px; border-radius: 20px;
+  pointer-events: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+}
+.timer-tabs {
+  display: flex; gap: 8px; margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.15);
+  padding-bottom: 6px;
+}
+.tab-btn {
+  background: none; border: none; color: rgba(255,255,255,0.6);
+  font-size: 10px; font-weight: 600; cursor: pointer; padding: 2px 8px;
+  border-radius: 10px; transition: all 0.2s;
+}
+.tab-btn.active { color: var(--gold-bright); background: rgba(255,255,255,0.12); }
+
+.timer-box { display: flex; gap: 12px; text-align: center; }
+.time-unit { display: flex; flex-direction: column; align-items: center; min-width: 38px; }
+.time-num { font-family: 'Cinzel', serif; font-size: 18px; font-weight: 700; color: #fff; }
+.time-label { font-size: 8px; text-transform: uppercase; color: var(--gold-accent); letter-spacing: 1px; }
+
 /* 海域舞台 */
 .ocean-stage {
-  position: relative; width: 100%; height: 60vh; min-height: 450px;
-  z-index: 10;
+  position: relative; width: 100%; height: 55vh; min-height: 400px; z-index: 10;
 }
 
 /* 🐬 海豚 */
@@ -126,18 +162,11 @@ html, body {
   transition: left 6s ease-in-out, top 6s ease-in-out, transform 0.5s ease-in-out;
 }
 .dolphin-inner {
-  width: 100%;
-  transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  width: 100%; transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
   animation: dolphinFloat 3.5s ease-in-out infinite;
 }
-.dolphin-img {
-  width: 100%; height: auto; display: block;
-  filter: drop-shadow(0 15px 25px rgba(0,0,0,0.5));
-}
-
-.dolphin-inner.flip-spin {
-  transform: rotate(360deg) scale(1.15);
-}
+.dolphin-img { width: 100%; height: auto; display: block; filter: drop-shadow(0 15px 25px rgba(0,0,0,0.5)); }
+.dolphin-inner.flip-spin { transform: rotate(360deg) scale(1.15); }
 
 @keyframes dolphinFloat {
   0%, 100% { transform: translateY(0) rotate(-3deg); }
@@ -159,14 +188,9 @@ html, body {
   width: 150px; cursor: pointer; z-index: 30;
   transition: left 8s ease-in-out, top 8s ease-in-out;
 }
-.bottle-inner {
-  width: 100%;
-  animation: bottleSway 4s ease-in-out infinite;
-}
-.bottle-img {
-  width: 100%; height: auto; display: block;
-  filter: drop-shadow(0 15px 25px rgba(0,0,0,0.5));
-}
+.bottle-inner { width: 100%; animation: bottleSway 4s ease-in-out infinite; }
+.bottle-img { width: 100%; height: auto; display: block; filter: drop-shadow(0 15px 25px rgba(0,0,0,0.5)); }
+
 @keyframes bottleSway {
   0%, 100% { transform: translateY(0) rotate(-6deg); }
   50% { transform: translateY(-20px) rotate(8deg); }
@@ -182,15 +206,13 @@ html, body {
 /* Modal 弹窗 */
 .modal-overlay {
   position: fixed; inset: 0; z-index: 200;
-  background: rgba(3, 10, 18, 0.75);
-  backdrop-filter: blur(8px);
+  background: rgba(3, 10, 18, 0.75); backdrop-filter: blur(8px);
   display: none; align-items: center; justify-content: center; padding: 20px;
 }
 .modal-overlay.open { display: flex; }
 
 .glass-card {
-  width: 100%; max-width: 440px;
-  background: var(--glass-bg);
+  width: 100%; max-width: 440px; background: var(--glass-bg);
   backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
   border: 1px solid var(--glass-border); border-radius: 24px;
   padding: 28px 24px; position: relative; text-align: center;
@@ -247,96 +269,98 @@ html, body {
 .social-row { display: flex; gap: 8px; margin-top: 10px; }
 .btn-outline { background: rgba(255,255,255,0.08); color: #fff; border: 1px solid rgba(255,255,255,0.25); text-decoration: none; font-size: 11px; }
 
-/* ⚓ 底部版权/署名样式 */
-.footer {
-  position: relative;
-  z-index: 10;
-  text-align: center;
-  padding: 15px 20px 25px;
-}
+/* ⚓ 底部署名 */
+.footer { position: relative; z-index: 10; text-align: center; padding: 15px 20px 25px; }
 .footer-text {
-  display: inline-block;
-  font-size: 12px;
-  letter-spacing: 1.5px;
-  color: rgba(255, 255, 255, 0.75);
-  background: var(--glass-bg);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid var(--glass-border);
-  padding: 6px 18px;
-  border-radius: 20px;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-  text-decoration: none;
-  transition: all 0.3s ease;
+  display: inline-block; font-size: 12px; letter-spacing: 1.5px;
+  color: rgba(255, 255, 255, 0.75); background: var(--glass-bg);
+  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  border: 1px solid var(--glass-border); padding: 6px 18px; border-radius: 20px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.2); text-decoration: none; transition: all 0.3s ease;
 }
 .footer-text:hover {
-  background: rgba(23, 74, 91, 0.85);
-  border-color: var(--gold-accent);
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(226, 185, 111, 0.3);
+  background: rgba(23, 74, 91, 0.85); border-color: var(--gold-accent);
+  transform: translateY(-2px); box-shadow: 0 6px 20px rgba(226, 185, 111, 0.3);
 }
 .footer-text strong {
-  color: var(--gold-bright);
-  font-weight: 600;
-  text-decoration: underline;
-  text-underline-offset: 3px;
+  color: var(--gold-bright); font-weight: 600; text-decoration: underline; text-underline-offset: 3px;
 }
 
 /* 📱 移动端适配 */
 @media (max-width: 600px) {
-  .audio-panel { top: 12px; right: 12px; padding: 6px 10px; min-width: auto; border-radius: 12px; }
-  .audio-panel .panel-title { display: none; }
-  .audio-row { padding: 2px 4px; }
-  .audio-row .row-label { font-size: 10px; }
-  .audio-row .row-sub { font-size: 8px; }
-  
-  .header { padding-top: 75px; }
+  .top-nav { top: 10px; left: 10px; right: 10px; }
+  .nav-btn span { display: none; }
+  .header { padding-top: 65px; }
   .ocean-stage { height: 50vh; min-height: 300px; }
-  
   .dolphin-wrapper { width: 140px; }
   .bottle-wrapper { width: 100px; }
-
   .ticket { flex-direction: column; }
   .ticket-stub { width: 100%; border-left: none; border-top: 2px dashed #C5B396; }
-  .footer-text { font-size: 11px; padding: 5px 14px; }
 }
 </style>
 </head>
 <body>
 
-<!-- 🎥 背景视频（保证全屏且置底） -->
+<!-- ✨ 鼠标跟随 Canvas -->
+<canvas id="trailCanvas"></canvas>
+
+<!-- 🎥 背景视频 -->
 <div class="hero-bg">
   <video autoplay loop muted playsinline>
     <source src="./bgvideo.mp4" type="video/mp4">
   </video>
 </div>
 
-<!-- 音频轨 -->
-<audio id="bgmAudio" loop></audio>
-<audio id="wavesAudio" loop src="./seawavesbgm.mp3"></audio>
-
-<!-- 右上角声音面板 -->
-<div class="audio-panel">
-  <div class="panel-title">Sound Studio</div>
-  <div class="audio-row" id="bgmRow">
-    <div class="icon-btn">🎧</div>
-    <div>
-      <div class="row-label">Yejun Playlist</div>
-      <div class="row-sub" id="bgmSub">Tap to play</div>
+<!-- 顶部导航区（含右侧按钮与 Sound Studio） -->
+<div class="top-nav">
+  <div class="nav-actions">
+    <button class="nav-btn" onclick="openModal('nameModal')">🎫 <span>Get Ticket</span></button>
+    <a class="nav-btn" href="https://x.com/MYPlliDduks" target="_blank">🌐 <span>Twitter</span></a>
+    
+    <!-- 音频控制 -->
+    <div class="audio-panel">
+      <div class="audio-row" id="bgmRow">
+        <div class="icon-btn">🎧</div>
+        <div>
+          <div class="row-label">Playlist</div>
+          <div class="row-sub" id="bgmSub">Tap play</div>
+        </div>
+      </div>
     </div>
   </div>
 </div>
 
-<!-- 标题区 -->
+<!-- 音频轨 -->
+<audio id="bgmAudio" loop></audio>
+<audio id="wavesAudio" loop src="./seawavesbgm.mp3"></audio>
+
+<!-- 标题与倒计时区 -->
 <div class="header">
   <div class="eyebrow">Welcome Aboard</div>
   <h1 class="title">Whisper from the Deep Blue</h1>
   <div class="subtitle">🇲🇾 Birthday Cafe for Yejun · Happy Birthday, Our Leader 🐬💙</div>
+
+  <!-- ⏳ 倒计时组件 -->
+  <div class="timer-container">
+    <div class="timer-tabs">
+      <button class="tab-btn active" id="tabBirthday" onclick="switchTimer('birthday')">🎂 Yejun's Birthday (09/12 KST)</button>
+      <button class="tab-btn" id="tabEvent" onclick="switchTimer('event')">☕ Event Cafe Start (09/19 MYT)</button>
+    </div>
+    <div class="timer-box">
+      <div class="time-unit"><span class="time-num" id="dDays">00</span><span class="time-label">Days</span></div>
+      <div class="time-num" style="font-size:14px; opacity:0.5; line-height:24px;">:</div>
+      <div class="time-unit"><span class="time-num" id="dHours">00</span><span class="time-label">Hours</span></div>
+      <div class="time-num" style="font-size:14px; opacity:0.5; line-height:24px;">:</div>
+      <div class="time-unit"><span class="time-num" id="dMins">00</span><span class="time-label">Mins</span></div>
+      <div class="time-num" style="font-size:14px; opacity:0.5; line-height:24px;">:</div>
+      <div class="time-unit"><span class="time-num" id="dSecs">00</span><span class="time-label">Secs</span></div>
+    </div>
+  </div>
 </div>
 
 <!-- 海洋舞台 -->
 <div class="ocean-stage">
-  <!-- 🐬 智能转向 + 翻滚的大海豚 -->
+  <!-- 🐬 海豚 -->
   <div class="dolphin-wrapper" id="dolphin">
     <div class="speech-bubble" id="speechBubble">HAPPY YEJUN DAY! 🎂</div>
     <div class="dolphin-inner" id="dolphinInner">
@@ -344,7 +368,7 @@ html, body {
     </div>
   </div>
 
-  <!-- 🍾 全局漂流的大漂流瓶 -->
+  <!-- 🍾 漂流瓶 -->
   <div class="bottle-wrapper" id="bottle">
     <div class="bottle-inner">
       <img src="./bottle.png" class="bottle-img" alt="Drift Bottle" />
@@ -353,7 +377,7 @@ html, body {
   </div>
 </div>
 
-<!-- ⚓ 网页底部署名区（带有超链接） -->
+<!-- ⚓ 网页底部署名区 -->
 <div class="footer">
   <a class="footer-text" href="https://lit.link/en/mypllidduks" target="_blank" rel="noopener noreferrer">
     by <strong>MYPlliDduks</strong>
@@ -442,17 +466,124 @@ const PASSENGER_PHOTO_URL = "./plli.jpg";
 const pImg = document.getElementById('passengerImg');
 if (pImg) pImg.src = PASSENGER_PHOTO_URL;
 
+// ✨ 1. 鼠标跟随星光尾迹 (Cursor Particle Effect)
+const canvas = document.getElementById('trailCanvas');
+const ctx = canvas.getContext('2d');
+let particles = [];
+
+function resizeCanvas() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();
+
+class Particle {
+  constructor(x, y) {
+    this.x = x; this.y = y;
+    this.size = Math.random() * 4 + 1;
+    this.speedX = Math.random() * 2 - 1;
+    this.speedY = Math.random() * 2 - 1;
+    this.color = `hsl(${180 + Math.random() * 40}, 80%, 75%)`;
+    this.alpha = 1;
+  }
+  update() {
+    this.x += this.speedX; this.y += this.speedY;
+    if (this.size > 0.2) this.size -= 0.08;
+    this.alpha -= 0.02;
+  }
+  draw() {
+    ctx.save();
+    ctx.globalAlpha = Math.max(0, this.alpha);
+    ctx.fillStyle = this.color;
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  }
+}
+
+function handlePointer(x, y) {
+  for (let i = 0; i < 2; i++) {
+    particles.push(new Particle(x, y));
+  }
+}
+
+window.addEventListener('mousemove', (e) => handlePointer(e.clientX, e.clientY));
+window.addEventListener('touchmove', (e) => {
+  if(e.touches.length > 0) handlePointer(e.touches[0].clientX, e.touches[0].clientY);
+});
+
+function animateParticles() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  for (let i = 0; i < particles.length; i++) {
+    particles[i].update();
+    particles[i].draw();
+    if (particles[i].alpha <= 0 || particles[i].size <= 0.2) {
+      particles.splice(i, 1);
+      i--;
+    }
+  }
+  requestAnimationFrame(animateParticles);
+}
+animateParticles();
+
+// ⏳ 2. 倒计时逻辑
+// 艺俊生日：韩国 09/12 00:00 = 马来西亚 09/11 23:00 (UTC+8)
+const TARGET_BIRTHDAY = new Date('2026-09-11T23:00:00+08:00').getTime();
+// 活动开始：马来西亚 09/19 11:00 (UTC+8)
+const TARGET_EVENT = new Date('2026-09-19T11:00:00+08:00').getTime();
+
+let currentTarget = TARGET_BIRTHDAY;
+
+function switchTimer(type) {
+  const btnBday = document.getElementById('tabBirthday');
+  const btnEvt = document.getElementById('tabEvent');
+  if (type === 'birthday') {
+    currentTarget = TARGET_BIRTHDAY;
+    btnBday.classList.add('active');
+    btnEvt.classList.remove('active');
+  } else {
+    currentTarget = TARGET_EVENT;
+    btnEvt.classList.add('active');
+    btnBday.classList.remove('active');
+  }
+  updateTimer();
+}
+
+function updateTimer() {
+  const now = new Date().getTime();
+  const diff = currentTarget - now;
+
+  if (diff <= 0) {
+    document.getElementById('dDays').textContent = '00';
+    document.getElementById('dHours').textContent = '00';
+    document.getElementById('dMins').textContent = '00';
+    document.getElementById('dSecs').textContent = '00';
+    return;
+  }
+
+  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+  const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+  const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+  const secs = Math.floor((diff % (1000 * 60)) / 1000);
+
+  document.getElementById('dDays').textContent = String(days).padStart(2, '0');
+  document.getElementById('dHours').textContent = String(hours).padStart(2, '0');
+  document.getElementById('dMins').textContent = String(mins).padStart(2, '0');
+  document.getElementById('dSecs').textContent = String(secs).padStart(2, '0');
+}
+setInterval(updateTimer, 1000);
+updateTimer();
+
 // 🌊 海浪音效自动播放
 const wavesAudio = document.getElementById('wavesAudio');
 let wavesStarted = false;
 
 function startWaves() {
   if (wavesStarted || !wavesAudio) return;
-  wavesAudio.play().then(() => {
-    wavesStarted = true;
-  }).catch(() => {});
+  wavesAudio.play().then(() => { wavesStarted = true; }).catch(() => {});
 }
-
 if (wavesAudio) wavesAudio.volume = 0.5;
 
 ['click', 'touchstart', 'mousemove', 'keydown'].forEach(evt => {
@@ -545,9 +676,13 @@ floatBottle();
 if (bottle) {
   bottle.addEventListener('click', (e) => {
     e.stopPropagation();
-    const modal = document.getElementById('nameModal');
-    if (modal) modal.classList.add('open');
+    openModal('nameModal');
   });
+}
+
+function openModal(id) {
+  const modal = document.getElementById(id);
+  if (modal) modal.classList.add('open');
 }
 
 function closeModal(id) { 
@@ -568,8 +703,7 @@ if (genBtn) {
     if (stubPName) stubPName.textContent = name.toUpperCase();
     
     closeModal('nameModal');
-    const ticketModal = document.getElementById('ticketModal');
-    if (ticketModal) ticketModal.classList.add('open');
+    openModal('ticketModal');
   });
 }
 
