@@ -51,9 +51,28 @@ html, body {
   100% { opacity: 1; }
 }
 
+/* 顶部导航栏（含右侧按钮） */
+.top-nav {
+  position: absolute; top: 20px; left: 20px; right: 20px;
+  display: flex; justify-content: flex-end; align-items: center; z-index: 90;
+}
+.nav-actions { display: flex; gap: 10px; align-items: center; }
+.nav-btn {
+  background: var(--glass-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border);
+  color: #fff; padding: 8px 16px; border-radius: 999px;
+  font-size: 12px; font-weight: 500; cursor: pointer;
+  display: inline-flex; align-items: center; gap: 6px;
+  text-decoration: none; transition: all 0.2s;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+}
+.nav-btn:hover { background: rgba(255,255,255,0.2); transform: translateY(-2px); }
+
 /* 音频控制面板 */
 .audio-panel {
-  position: fixed; top: 18px; right: 18px; z-index: 80;
+  position: fixed; top: 76px; right: 20px; z-index: 80;
   background: var(--glass-bg);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
@@ -99,7 +118,7 @@ html, body {
 
 /* 海域舞台 */
 .ocean-stage {
-  position: relative; width: 100%; height: 55vh; min-height: 400px;
+  position: relative; width: 100%; height: 48vh; min-height: 350px;
   z-index: 5;
 }
 
@@ -121,7 +140,7 @@ html, body {
 .dolphin-svg { width: 100%; height: 100%; filter: drop-shadow(0 8px 16px rgba(0,0,0,0.4)); }
 .dolphin-inner.flip-spin { transform: rotate(360deg) scale(1.15); }
 
-/* 🐋 Meymu 样式（与海豚一致的游走与360°旋转，无气泡） */
+/* 🐋 Meymu 样式 */
 .meymu-wrapper {
   position: absolute; left: 70%; top: 35%;
   width: 100px; height: 100px; cursor: pointer; z-index: 10;
@@ -152,18 +171,54 @@ html, body {
 /* 🍾 真正的玻璃漂流瓶 */
 .bottle-wrapper {
   position: absolute; left: 50%; bottom: 15%; transform: translateX(-50%);
-  width: 75px; height: 150px; cursor: pointer; z-index: 12;
+  width: 70px; height: 130px; cursor: pointer; z-index: 12;
   animation: bottleSway 4s ease-in-out infinite;
 }
 @keyframes bottleSway {
   0%, 100% { transform: translateX(-50%) translateY(0) rotate(-5deg); }
-  50% { transform: translateX(-50%) translateY(-15px) rotate(6deg); }
+  50% { transform: translateX(-50%) translateY(-12px) rotate(6deg); }
 }
 .bottle-hint {
-  position: absolute; bottom: -35px; left: 50%; transform: translateX(-50%);
-  font-size: 11px; font-weight: 500; color: #fff; white-space: nowrap;
+  position: absolute; bottom: -32px; left: 50%; transform: translateX(-50%);
+  font-size: 10px; font-weight: 500; color: #fff; white-space: nowrap;
   background: rgba(10, 25, 40, 0.6); backdrop-filter: blur(6px);
-  padding: 5px 12px; border-radius: 12px; border: 1px solid var(--glass-border);
+  padding: 4px 10px; border-radius: 12px; border: 1px solid var(--glass-border);
+}
+
+/* ============================================================
+   ⏳ 倒计时区域 (Countdown Section)
+============================================================ */
+.countdown-section {
+  position: relative; z-index: 5; text-align: center;
+  padding: 10px 20px 40px; max-width: 600px; margin: 0 auto;
+}
+.countdown-card {
+  background: var(--glass-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--glass-border);
+  border-radius: 20px; padding: 20px;
+  box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+}
+.countdown-title {
+  font-size: 11px; letter-spacing: 3px; text-transform: uppercase;
+  color: var(--gold-bright); font-weight: 700; margin-bottom: 14px;
+}
+.countdown-grid {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;
+}
+.time-box {
+  background: rgba(10, 25, 40, 0.5);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 12px; padding: 10px 5px;
+}
+.time-num {
+  font-family: 'Cinzel', serif; font-size: 24px; font-weight: 700;
+  color: #fff; text-shadow: 0 2px 10px rgba(245,215,139,0.3);
+}
+.time-label {
+  font-size: 9px; text-transform: uppercase; color: rgba(255,255,255,0.6);
+  margin-top: 4px; letter-spacing: 1px;
 }
 
 /* Modal 弹窗 */
@@ -244,11 +299,18 @@ html, body {
 
 <div class="hero-bg"></div>
 
+<!-- 顶部导航区（含你的跳转链接） -->
+<div class="top-nav">
+  <div class="nav-actions">
+    <a class="nav-btn" href="https://x.com/MYPlliDduks" target="_blank">🎫 <span>Get Donation Kit</span></a>
+    <a class="nav-btn" href="https://x.com/MYPlliDduks" target="_blank">🌐 <span>Twitter</span></a>
+  </div>
+</div>
+
 <!-- 音频轨 -->
 <audio id="bgmAudio" loop></audio>
 <audio id="wavesAudio" loop></audio>
 <audio id="corkAudio"></audio>
-<audio id="dolphinAudio"></audio>
 
 <!-- 右上角声音面板 -->
 <div class="audio-panel">
@@ -296,7 +358,7 @@ html, body {
     </div>
   </div>
 
-  <!-- 🐋 自由游走 Meymu (点击会旋转，不说话) -->
+  <!-- 🐋 自由游走 Meymu -->
   <div class="meymu-wrapper" id="meymu">
     <div class="meymu-inner" id="meymuInner">
       <img src="./meymu.png" class="meymu-img" alt="Meymu" />
@@ -315,7 +377,32 @@ html, body {
       <line x1="40" y1="112" x2="58" y2="108" stroke="#D8A25E" stroke-width="2" transform="rotate(-10 50 125)"/>
       <line x1="40" y1="122" x2="55" y2="118" stroke="#D8A25E" stroke-width="2" transform="rotate(-10 50 125)"/>
     </svg>
-    <div class="bottle-hint">Click the drift bottle to unlock your message 🐬</div>
+    <div class="bottle-hint">Click the drift bottle to unlock ticket 🐬</div>
+  </div>
+</div>
+
+<!-- ⏳ 倒计时区域 -->
+<div class="countdown-section">
+  <div class="countdown-card">
+    <div class="countdown-title">Countdown to Yejun's Birthday Cafe 🎂</div>
+    <div class="countdown-grid">
+      <div class="time-box">
+        <div class="time-num" id="days">00</div>
+        <div class="time-label">Days</div>
+      </div>
+      <div class="time-box">
+        <div class="time-num" id="hours">00</div>
+        <div class="time-label">Hours</div>
+      </div>
+      <div class="time-box">
+        <div class="time-num" id="mins">00</div>
+        <div class="time-label">Mins</div>
+      </div>
+      <div class="time-box">
+        <div class="time-num" id="secs">00</div>
+        <div class="time-label">Secs</div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -390,7 +477,6 @@ html, body {
 const BGM_URL = "./yejuncoverbgm.mp3";  
 const WAVES_URL = "";         
 const CORK_URL = "";          
-const DOLPHIN_SOUND_URL = ""; 
 const PASSENGER_PHOTO_URL = "https://i.pinimg.com/564x/f9/f3/81/f9f38103e07ffff8bbdc219b42f1108e.jpg"; 
 
 document.getElementById('passengerImg').src = PASSENGER_PHOTO_URL;
@@ -418,28 +504,21 @@ function bindAudio(rowId, audioId, subId, url) {
 bindAudio('bgmRow', 'bgmAudio', 'bgmSub', BGM_URL);
 bindAudio('wavesRow', 'wavesAudio', 'wavesSub', WAVES_URL);
 
-/* 🐬 海豚自由游走与智能转向 */
+/* 🐬 海豚游走 */
 const dolphin = document.getElementById('dolphin');
 let currentDolphinX = 15;
-
 function swimDolphin() {
   const nextX = 5 + Math.random() * 70;
   const nextY = 25 + Math.random() * 40;
-  
-  if (nextX < currentDolphinX) {
-    dolphin.style.transform = 'scaleX(-1)';
-  } else {
-    dolphin.style.transform = 'scaleX(1)';
-  }
+  if (nextX < currentDolphinX) { dolphin.style.transform = 'scaleX(-1)'; }
+  else { dolphin.style.transform = 'scaleX(1)'; }
   currentDolphinX = nextX;
-  
   dolphin.style.left = nextX + '%';
   dolphin.style.top = nextY + '%';
   setTimeout(swimDolphin, 6000);
 }
 swimDolphin();
 
-/* 点击海豚翻转与寄语 */
 const dolphinInner = document.getElementById('dolphinInner');
 const msgs = ["HAPPY YEJUN DAY! 🎂", "Welcome to Asterum!", "May your ocean stay blue 💙", "PLLI ❤️ YEJUN"];
 dolphin.addEventListener('click', (e) => {
@@ -454,22 +533,16 @@ dolphin.addEventListener('click', (e) => {
   setTimeout(() => bubble.classList.remove('show'), 2500);
 });
 
-/* 🐋 Meymu 自由游走、智能转向与点击 360° 旋转（不说话） */
+/* 🐋 Meymu 游走 */
 const meymu = document.getElementById('meymu');
 const meymuInner = document.getElementById('meymuInner');
 let currentMeymuX = 70;
-
 function swimMeymu() {
   const nextX = 5 + Math.random() * 70;
   const nextY = 25 + Math.random() * 40;
-  
-  if (nextX < currentMeymuX) {
-    meymu.style.transform = 'scaleX(-1)';
-  } else {
-    meymu.style.transform = 'scaleX(1)';
-  }
+  if (nextX < currentMeymuX) { meymu.style.transform = 'scaleX(-1)'; }
+  else { meymu.style.transform = 'scaleX(1)'; }
   currentMeymuX = nextX;
-
   meymu.style.left = nextX + '%';
   meymu.style.top = nextY + '%';
   setTimeout(swimMeymu, 7000);
@@ -483,6 +556,29 @@ meymu.addEventListener('click', (e) => {
     setTimeout(() => meymuInner.classList.remove('flip-spin'), 800);
   }
 });
+
+/* ⏳ 倒计时逻辑 (目标设定为艺俊生日，例如每年9月19日) */
+function updateCountdown() {
+  const now = new Date();
+  let targetYear = now.getFullYear();
+  let targetDate = new Date(targetYear, 8, 19, 0, 0, 0); // 9月19日 (月份从0开始算，8代表9月)
+  if (now > targetDate) {
+    targetDate = new Date(targetYear + 1, 8, 19, 0, 0, 0);
+  }
+  const diff = targetDate - now;
+  
+  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+  const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+  const mins = Math.floor((diff / 1000 / 60) % 60);
+  const secs = Math.floor((diff / 1000) % 60);
+
+  document.getElementById('days').textContent = String(days).padStart(2, '0');
+  document.getElementById('hours').textContent = String(hours).padStart(2, '0');
+  document.getElementById('mins').textContent = String(mins).padStart(2, '0');
+  document.getElementById('secs').textContent = String(secs).padStart(2, '0');
+}
+setInterval(updateCountdown, 1000);
+updateCountdown();
 
 /* 🍾 漂流瓶弹窗 */
 const bottle = document.getElementById('bottle');
