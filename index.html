@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Asterum Shore · Yejun Birthday Cafe</title>
+
+<!-- Google Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<!-- html2canvas 用于下载船票 -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+<style>
+:root {
+  --deep-blue: #0A192F;
+  --ocean-teal: #174A5B;
+  --gold-accent: #E2B96F;
+  --gold-bright: #F5D78B;
+  --paper-cream: #FAF4E8;
+  --text-dark: #1C2833;
+  --coral-accent: #E06D53;
+  --glass-bg: rgba(15, 35, 55, 0.65);
+  --glass-border: rgba(255, 255, 255, 0.22);
+}
+
+* { box-sizing: border-box; }
+html, body {
+  margin: 0; padding: 0; min-height: 100vh;
+  font-family: 'Poppins', sans-serif;
+  color: #fff;
+  background: var(--deep-blue);
+  overflow-x: hidden;
+}
+
+/* 🌊 动态梦幻海洋背景 */
+.hero-bg {
+  position: fixed; inset: 0; z-index: -2;
+  background: linear-gradient(180deg, #091D2C 0%, #0E364A 40%, #154D63 70%, #1F6B7E 100%);
+}
+.hero-bg::after {
+  content: ''; position: absolute; inset: 0;
+  background: radial-gradient(circle at 50% 20%, rgba(245, 215, 139, 0.18) 0%, transparent 60%);
+  animation: bgGlow 8s ease-in-out infinite alternate;
+}
+@keyframes bgGlow {
+  0% { opacity: 0.5; }
+  100% { opacity: 1; }
+}
+
+/* 音频控制面板 (只留歌曲按钮) */
+.audio-panel {
+  position: fixed; top: 18px; right: 18px; z-index: 80;
+  background: var(--glass-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--glass-border);
+  border-radius: 18px; padding: 12px 16px;
+  box-shadow: 0 12px 32px rgba(0,0,0,0.4);
+  min-width: 180px;
+}
+.audio-panel .panel-title {
+  font-size: 10px; letter-spacing: 2px; text-transform: uppercase;
+  color: var(--gold-bright); font-weight: 700; margin-bottom: 6px;
+}
+.audio-row {
+  display: flex; align-items: center; gap: 10px;
+  cursor: pointer; padding: 6px; border-radius: 10px;
+  transition: background 0.2s;
+  user-select: none;
+}
+.audio-row:hover { background: rgba(255,255,255,0.08); }
+.audio-row .icon-btn {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--gold-accent), #B8863F);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; flex-shrink: 0; color: #10202B; font-weight: bold;
+}
+.audio-row.playing .icon-btn { background: #52D6B8; }
+.audio-row .row-label { font-size: 12px; font-weight: 500; }
+.audio-row .row-sub { font-size: 9px; color: rgba(255,255,255,0.6); }
+
+/* Header 标题区 */
+.header {
+  position: relative; z-index: 5; text-align: center;
+  padding: 50px 20px 10px;
+}
+.eyebrow { font-size: 11px; letter-spacing: 4px; text-transform: uppercase; color: var(--gold-bright); opacity: 0.9; }
+.title {
+  font-family: 'Cinzel', serif; font-weight: 700;
+  font-size: clamp(28px, 5vw, 48px); margin: 8px 0;
+  background: linear-gradient(180deg, #FFFFFF 30%, var(--gold-bright) 100%);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  text-shadow: 0 4px 20px rgba(0,0,0,0.4);
+}
+.subtitle { font-size: 13px; color: rgba(255,255,255,0.85); font-weight: 300; }
+
+/* 海域舞台 */
+.ocean-stage {
+  position: relative; width: 100%; height: 55vh; min-height: 400px;
+  z-index: 5;
+}
+
+/* 🐬 海豚 */
+.dolphin-wrapper {
+  position: absolute; left: 15%; top: 40%;
+  width: 110px; height: 110px; cursor: pointer; z-index: 10;
+  transition: left 6s ease-in-out, top 6s ease-in-out;
+}
+.dolphin-inner {
+  width: 100%; height: 100%;
+  animation: dolphinFloat 3.5s ease-in-out infinite;
+}
+@keyframes dolphinFloat {
+  0%, 100% { transform: translateY(0) rotate(-3deg); }
+  50% { transform: translateY(-14px) rotate(4deg); }
+}
+.dolphin-svg { width: 100%; height: 100%; filter: drop-shadow(0 8px 16px rgba(0,0,0,0.4)); }
+
+/* 寄语气泡 */
+.speech-bubble {
+  position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%) scale(0.8);
+  background: var(--paper-cream); color: var(--text-dark);
+  font-weight: 600; font-size: 12px; padding: 8px 14px; border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.3); white-space: nowrap;
+  opacity: 0; pointer-events: none; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.speech-bubble.show { opacity: 1; transform: translateX(-50%) scale(1); }
+
+/* 🍾 漂流瓶 */
+.bottle-wrapper {
+  position: absolute; left: 50%; bottom: 15%; transform: translateX(-50%);
+  width: 75px; height: 150px; cursor: pointer; z-index: 12;
+  animation: bottleSway 4s ease-in-out infinite;
+}
+@keyframes bottleSway {
+  0%, 100% { transform: translateX(-50%) translateY(0) rotate(-5deg); }
+  50% { transform: translateX(-50%) translateY(-15px) rotate(6deg); }
+}
+.bottle-hint {
+  position: absolute; bottom: -35px; left: 50%; transform: translateX(-50%);
+  font-size: 11px; font-weight: 500; color: #fff; white-space: nowrap;
+  background: rgba(10, 25, 40, 0.6); backdrop-filter: blur(6px);
+  padding: 5px 12px; border-radius: 12px; border: 1px solid var(--glass-border);
+}
+
+/* Modal 弹窗 */
+.modal-overlay {
+  position: fixed; inset: 0; z-index: 200;
+  background: rgba(3, 10, 18, 0.75);
+  backdrop-filter: blur(8px);
+  display: none; align-items: center; justify-content: center; padding: 20px;
+}
+.modal-overlay.open { display: flex; }
+
+.glass-card {
+  width: 100%; max-width: 440px;
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border); border-radius: 24px;
+  padding: 28px 24px; position: relative; text-align: center;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+}
+.modal-close {
+  position: absolute; top: 14px; right: 16px; background: none; border: none;
+  font-size: 18px; color: rgba(255,255,255,0.6); cursor: pointer;
+}
+.name-input {
+  width: 100%; padding: 12px 16px; border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.3); background: rgba(255,255,255,0.1);
+  color: #fff; font-size: 14px; outline: none; margin: 16px 0;
+}
+.name-input::placeholder { color: rgba(255,255,255,0.5); }
+
+/* 🎫 船票排版 */
+.ticket-container { max-width: 500px; text-align: left; }
+.ticket {
+  display: flex; background: var(--paper-cream); color: var(--text-dark);
+  border-radius: 14px; overflow: hidden; box-shadow: 0 12px 30px rgba(0,0,0,0.3);
+}
+.ticket-main { flex: 1; padding: 18px; position: relative; }
+.ticket-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #D5C7B1; padding-bottom: 8px; }
+.ticket-brand { font-family: 'Cinzel'; font-weight: 700; font-size: 14px; color: var(--ocean-teal); }
+.ticket-route { display: flex; align-items: center; gap: 10px; margin: 12px 0; }
+.route-code { font-family: 'Cinzel'; font-weight: 700; font-size: 14px; }
+.route-line { flex: 1; height: 1px; background: #C5B396; position: relative; }
+.route-line::after { content: '🐬'; position: absolute; right: 0; top: -10px; font-size: 12px; }
+
+.ticket-body { display: flex; gap: 12px; align-items: center; margin-bottom: 10px; }
+.passenger-img { width: 55px; height: 55px; border-radius: 10px; object-fit: cover; border: 2px solid var(--gold-accent); }
+.field-label { font-size: 8px; text-transform: uppercase; color: #7A6B53; letter-spacing: 1px; font-weight: 600; }
+.field-value { font-weight: 700; font-size: 13px; color: var(--text-dark); }
+
+.ticket-stub {
+  width: 110px; background: #EFE4D1; border-left: 2px dashed #C5B396;
+  padding: 14px 10px; display: flex; flex-direction: column; justify-content: space-between; text-align: center;
+}
+.stub-title { font-family: 'Cinzel'; font-weight: 700; font-size: 10px; color: var(--ocean-teal); }
+
+.disclaimer {
+  background: rgba(0,0,0,0.3); color: var(--gold-bright); font-size: 10px;
+  padding: 10px 14px; border-radius: 8px; margin-top: 14px; text-align: center; line-height: 1.4;
+}
+
+.btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  border: none; cursor: pointer; font-weight: 600; font-size: 13px;
+  padding: 11px 20px; border-radius: 999px; transition: transform 0.15s; width: 100%;
+}
+.btn-primary { background: linear-gradient(135deg, var(--gold-bright), var(--gold-accent)); color: #1A1008; }
+.btn-coral { background: linear-gradient(135deg, var(--coral-accent), #B84A32); color: #fff; margin-top: 12px; }
+.social-row { display: flex; gap: 8px; margin-top: 10px; }
+.btn-outline { background: rgba(255,255,255,0.08); color: #fff; border: 1px solid rgba(255,255,255,0.25); text-decoration: none; font-size: 11px; }
+
+@media (max-width: 480px) {
+  .ticket { flex-direction: column; }
+  .ticket-stub { width: 100%; border-left: none; border-top: 2px dashed #C5B396; }
+}
+</style>
+</head>
+<body>
+
+<div class="hero-bg"></div>
+
+<!-- 音频轨 -->
+<audio id="bgmAudio" loop></audio>
+<!-- 🌊 绑定本地海浪音效文件 -->
+<audio id="wavesAudio" loop src="./seawavesbgm.mp3"></audio>
+
+<!-- 右上角声音面板 -->
+<div class="audio-panel">
+  <div class="panel-title">Sound Studio</div>
+  <div class="audio-row" id="bgmRow">
+    <div class="icon-btn">🎵</div>
+    <div>
+      <div class="row-label">Yejun Playlist</div>
+      <div class="row-sub" id="bgmSub">Tap to play</div>
+    </div>
+  </div>
+</div>
+
+<!-- Title -->
+<div class="header">
+  <div class="eyebrow">Welcome Aboard</div>
+  <h1 class="title">Whisper from the Deep Blue</h1>
+  <div class="subtitle">🇲🇾 Birthday Cafe for Yejun · Happy Birthday, Our Leader 🐬</div>
+</div>
+
+<!-- 海洋舞台 -->
+<div class="ocean-stage">
+  <!-- 🐬 自由游走海豚 -->
+  <div class="dolphin-wrapper" id="dolphin">
+    <div class="speech-bubble" id="speechBubble">HAPPY YEJUN DAY! 🎂</div>
+    <div class="dolphin-inner">
+      <svg class="dolphin-svg" viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg">
+        <path d="M10,80 Q30,20 100,15 Q160,10 190,35 Q170,45 150,40 Q120,60 80,62 Q40,70 10,80 Z" fill="url(#dGrad)"/>
+        <defs>
+          <linearGradient id="dGrad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#F5D78B"/>
+            <stop offset="50%" stop-color="#2D7A8F"/>
+            <stop offset="100%" stop-color="#0E364A"/>
+          </linearGradient>
+        </defs>
+        <circle cx="165" cy="28" r="3" fill="#0A192F"/>
+      </svg>
+    </div>
+  </div>
+
+  <!-- 🍾 真正的精美玻璃漂流瓶 -->
+  <div class="bottle-wrapper" id="bottle">
+    <svg viewBox="0 0 100 200" xmlns="http://www.w3.org/2000/svg" style="width:100%; height:100%;">
+      <!-- 瓶塞 -->
+      <rect x="40" y="10" width="20" height="15" rx="3" fill="#D8A25E"/>
+      <!-- 瓶身 -->
+      <path d="M35,25 L65,25 L65,50 Q85,70 85,110 L85,170 Q85,185 70,185 L30,185 Q15,185 15,170 L15,110 Q15,70 35,25 Z" fill="rgba(255,255,255,0.18)" stroke="rgba(255,255,255,0.6)" stroke-width="2"/>
+      <!-- 瓶内卷轴信纸 -->
+      <rect x="35" y="100" width="30" height="50" rx="3" fill="#FAF4E8" transform="rotate(-10 50 125)"/>
+      <line x1="40" y1="112" x2="58" y2="108" stroke="#D8A25E" stroke-width="2" transform="rotate(-10 50 125)"/>
+      <line x1="40" y1="122" x2="55" y2="118" stroke="#D8A25E" stroke-width="2" transform="rotate(-10 50 125)"/>
+    </svg>
+    <div class="bottle-hint">Click the drift bottle to unlock your message 🐬</div>
+  </div>
+</div>
+
+<!-- 姓名输入 Modal -->
+<div class="modal-overlay" id="nameModal">
+  <div class="glass-card">
+    <button class="modal-close" onclick="closeModal('nameModal')">✕</button>
+    <div style="font-size:32px; margin-bottom:8px;">🍾✨</div>
+    <h3 style="margin:0; font-family:'Cinzel'; color:var(--gold-bright);">You found a drift bottle!</h3>
+    <p style="font-size:12px; color:rgba(255,255,255,0.8); margin-top:6px;">Enter your name or PLLI nickname to unlock your commemorative boarding pass.</p>
+    <input type="text" id="nameInput" class="name-input" placeholder="Enter your name / PLLI nickname" maxlength="20" />
+    <button class="btn btn-primary" id="genBtn">Generate My Boarding Pass ✨</button>
+  </div>
+</div>
+
+<!-- 船票 Modal -->
+<div class="modal-overlay" id="ticketModal">
+  <div class="glass-card ticket-container">
+    <button class="modal-close" onclick="closeModal('ticketModal')">✕</button>
+    
+    <div class="ticket" id="ticketCard">
+      <div class="ticket-main">
+        <div class="ticket-header">
+          <div class="ticket-brand">ASTERUM CRUISE</div>
+          <div style="font-size:9px; background:var(--ocean-teal); color:#fff; padding:2px 6px; border-radius:4px;">BOARDING PASS</div>
+        </div>
+        <div class="ticket-route">
+          <div class="route-code">ASU<div style="font-size:8px; font-weight:400; color:#7A6B53;">ASTERUM</div></div>
+          <div class="route-line"></div>
+          <div class="route-code">YBC<div style="font-size:8px; font-weight:400; color:#7A6B53;">YEJUN CAFE</div></div>
+        </div>
+        <div class="ticket-body">
+          <img id="passengerImg" class="passenger-img" alt="Yejun/Cafe Photo" />
+          <div>
+            <div class="field-label">Passenger</div>
+            <div class="field-value" id="pName">GUEST</div>
+            <div class="field-label" style="margin-top:4px;">Destination</div>
+            <div class="field-value" style="font-size:11px;">Yejun Birthday Cafe 🌊</div>
+          </div>
+        </div>
+        <div style="font-size:10px; font-style:italic; color:#556677; border-top:1px dashed #D5C7B1; padding-top:6px;">
+          "May your days be filled with warm ocean breezes and blue skies 💙"
+        </div>
+      </div>
+      <div class="ticket-stub">
+        <div class="stub-title">ASTERUM</div>
+        <div>
+          <div class="field-label">Name</div>
+          <div style="font-weight:700; font-size:11px;" id="stubPName">GUEST</div>
+        </div>
+        <div style="font-size:8px; color:#888; letter-spacing:1px;">A1-2026-YJ</div>
+      </div>
+    </div>
+
+    <div class="disclaimer">
+      ⚠️ NOTICE: This boarding pass is a commemorative souvenir for PLLI. Official venue entry requires showing your Gmail confirmation email and Reservation ID.
+    </div>
+
+    <button class="btn btn-coral" id="downloadBtn">📸 Save / Download Ticket</button>
+
+    <div class="social-row">
+      <a class="btn btn-outline" id="twitterLink" href="https://twitter.com" target="_blank">🐦 Twitter / X</a>
+      <a class="btn btn-outline" id="instagramLink" href="https://instagram.com" target="_blank">📸 Instagram</a>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ============================================================================
+   🔗 【配置文件路径】
+============================================================================ */
+const BGM_URL = "./yejuncoverbgm.mp3"; 
+const PASSENGER_PHOTO_URL = "https://i.pinimg.com/564x/f9/f3/81/f9f38103e07ffff8bbdc219b42f1108e.jpg";
+
+const pImg = document.getElementById('passengerImg');
+if (pImg) pImg.src = PASSENGER_PHOTO_URL;
+
+/* ============================================================================
+   🌊 本地海浪背景声自动播放逻辑
+============================================================================ */
+const wavesAudio = document.getElementById('wavesAudio');
+let wavesStarted = false;
+
+function startWaves() {
+  if (wavesStarted || !wavesAudio) return;
+  wavesAudio.play().then(() => {
+    wavesStarted = true;
+    ['click', 'touchstart', 'mousemove', 'scroll', 'keydown'].forEach(evt => {
+      window.removeEventListener(evt, startWaves);
+    });
+  }).catch(() => {});
+}
+
+if (wavesAudio) {
+  wavesAudio.volume = 0.5; // 设置适中的背景音量
+}
+
+// 用户只要有任何基础动作（点击、滑动、移动鼠标），立刻播放海浪声
+['click', 'touchstart', 'mousemove', 'scroll', 'keydown'].forEach(evt => {
+  window.addEventListener(evt, startWaves, { once: true });
+});
+
+/* ============================================================================
+   🎵 BGM Playlist 控制
+============================================================================ */
+const bgmAudio = document.getElementById('bgmAudio');
+const bgmRow = document.getElementById('bgmRow');
+const bgmSub = document.getElementById('bgmSub');
+
+if (bgmAudio) bgmAudio.src = BGM_URL;
+
+if (bgmRow) {
+  bgmRow.addEventListener('click', () => {
+    if (!bgmAudio) return;
+    
+    if (bgmAudio.paused) {
+      bgmAudio.play().then(() => {
+        bgmRow.classList.add('playing');
+        if (bgmSub) bgmSub.textContent = "Playing...";
+      }).catch(err => {
+        alert("无法播放！请检查 yejuncoverbgm.mp3 是否和 index.html 放在同一个文件夹内。");
+      });
+    } else {
+      bgmAudio.pause();
+      bgmRow.classList.remove('playing');
+      if (bgmSub) bgmSub.textContent = "Paused";
+    }
+  });
+}
+
+/* ============================================================================
+   🐬 界面互动动画
+============================================================================ */
+const dolphin = document.getElementById('dolphin');
+function swim() {
+  if (!dolphin) return;
+  const nextX = 5 + Math.random() * 70;
+  const nextY = 25 + Math.random() * 40;
+  dolphin.style.left = nextX + '%';
+  dolphin.style.top = nextY + '%';
+  setTimeout(swim, 6000);
+}
+swim();
+
+const msgs = ["HAPPY YEJUN DAY! 🎂", "Welcome to Asterum!", "May your ocean stay blue 💙", "PLLI ❤️ YEJUN"];
+if (dolphin) {
+  dolphin.addEventListener('click', () => {
+    const bubble = document.getElementById('speechBubble');
+    if (bubble) {
+      bubble.textContent = msgs[Math.floor(Math.random()*msgs.length)];
+      bubble.classList.add('show');
+      setTimeout(() => bubble.classList.remove('show'), 2500);
+    }
+  });
+}
+
+const bottle = document.getElementById('bottle');
+if (bottle) {
+  bottle.addEventListener('click', () => {
+    const modal = document.getElementById('nameModal');
+    if (modal) modal.classList.add('open');
+  });
+}
+
+function closeModal(id) { 
+  const modal = document.getElementById(id);
+  if (modal) modal.classList.remove('open'); 
+}
+
+const genBtn = document.getElementById('genBtn');
+if (genBtn) {
+  genBtn.addEventListener('click', () => {
+    const input = document.getElementById('nameInput');
+    const name = (input && input.value.trim()) ? input.value.trim() : "PLLI";
+    
+    const pName = document.getElementById('pName');
+    const stubPName = document.getElementById('stubPName');
+    if (pName) pName.textContent = name.toUpperCase();
+    if (stubPName) stubPName.textContent = name.toUpperCase();
+    
+    closeModal('nameModal');
+    const ticketModal = document.getElementById('ticketModal');
+    if (ticketModal) ticketModal.classList.add('open');
+  });
+}
+
+const downloadBtn = document.getElementById('downloadBtn');
+if (downloadBtn) {
+  downloadBtn.addEventListener('click', async () => {
+    const card = document.getElementById('ticketCard');
+    if (typeof html2canvas !== 'undefined' && card) {
+      const canvas = await html2canvas(card, { scale: 2, backgroundColor: '#FAF4E8', useCORS: true });
+      const a = document.createElement('a');
+      a.download = `Yejun_Birthday_Cafe_Ticket.png`;
+      a.href = canvas.toDataURL();
+      a.click();
+    }
+  });
+}
+</script>
+</body>
+</html>
