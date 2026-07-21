@@ -30,11 +30,12 @@ html, body {
   margin: 0; padding: 0; min-height: 100vh;
   font-family: 'Poppins', sans-serif;
   color: #fff;
-  background-color: #0A192F; /* 视频未加载时的保底背景色 */
+  background: radial-gradient(circle at 50% 30%, #173B5C 0%, #0A192F 70%, #050C16 100%);
+  background-attachment: fixed;
   overflow-x: hidden;
 }
 
-/* 🎥 背景视频：保证全屏铺满且位于最底层 */
+/* 🎥 背景视频（保证最底层 + 铺满） */
 .hero-video-bg {
   position: fixed;
   top: 0; left: 0; 
@@ -43,7 +44,7 @@ html, body {
   z-index: -2;
 }
 
-/* 渐变遮罩：调轻浅色度，避免遮住视频 */
+/* 浅色半透明遮罩 */
 .video-overlay {
   position: fixed; inset: 0; z-index: -1;
   background: rgba(10, 25, 47, 0.35);
@@ -52,7 +53,7 @@ html, body {
 
 /* 🎵 右上角音频控制面板 */
 .audio-panel {
-  position: fixed; top: 18px; right: 18px; z-index: 80;
+  position: fixed; top: 18px; right: 18px; z-index: 100;
   background: var(--glass-bg);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
@@ -86,6 +87,7 @@ html, body {
 .header {
   position: relative; z-index: 5; text-align: center;
   padding: 60px 20px 10px;
+  pointer-events: none; /* 避免挡住海豚与漂流瓶的点击 */
 }
 .eyebrow { font-size: 11px; letter-spacing: 4px; text-transform: uppercase; color: var(--gold-bright); opacity: 0.9; }
 .title {
@@ -100,13 +102,13 @@ html, body {
 /* 海域舞台 */
 .ocean-stage {
   position: relative; width: 100%; height: 65vh; min-height: 500px;
-  z-index: 5;
+  z-index: 10;
 }
 
-/* 🐬 海豚：大幅调大尺寸 (280px) */
+/* 🐬 海豚：280px 大尺寸 */
 .dolphin-wrapper {
   position: absolute; left: 20%; top: 25%;
-  width: 280px; cursor: pointer; z-index: 10;
+  width: 280px; cursor: pointer; z-index: 20;
   transition: left 6s ease-in-out, top 6s ease-in-out, transform 0.5s ease-in-out;
 }
 .dolphin-inner {
@@ -119,7 +121,6 @@ html, body {
   filter: drop-shadow(0 15px 25px rgba(0,0,0,0.5));
 }
 
-/* 点击海豚时的 360 度翻转特技 */
 .dolphin-inner.flip-spin {
   transform: rotate(360deg) scale(1.15);
 }
@@ -129,7 +130,6 @@ html, body {
   50% { transform: translateY(-20px) rotate(4deg); }
 }
 
-/* 寄语气泡 */
 .speech-bubble {
   position: absolute; bottom: 105%; left: 50%; transform: translateX(-50%) scale(0.8);
   background: var(--paper-cream); color: var(--text-dark);
@@ -139,10 +139,10 @@ html, body {
 }
 .speech-bubble.show { opacity: 1; transform: translateX(-50%) scale(1); }
 
-/* 🍾 漂流瓶：大幅调大尺寸 (180px) 并且全局漂流 */
+/* 🍾 漂流瓶：180px 大尺寸 */
 .bottle-wrapper {
   position: absolute; left: 45%; top: 55%;
-  width: 180px; cursor: pointer; z-index: 12;
+  width: 180px; cursor: pointer; z-index: 30;
   transition: left 8s ease-in-out, top 8s ease-in-out;
 }
 .bottle-inner {
@@ -233,7 +233,7 @@ html, body {
 .social-row { display: flex; gap: 8px; margin-top: 10px; }
 .btn-outline { background: rgba(255,255,255,0.08); color: #fff; border: 1px solid rgba(255,255,255,0.25); text-decoration: none; font-size: 11px; }
 
-/* 📱 移动端自适应 */
+/* 📱 移动端适配 */
 @media (max-width: 600px) {
   .audio-panel { top: 12px; right: 12px; padding: 6px 10px; min-width: auto; border-radius: 12px; }
   .audio-panel .panel-title { display: none; }
@@ -252,7 +252,7 @@ html, body {
 </head>
 <body>
 
-<!-- 🎥 背景视频（自动播放、循环、静音） -->
+<!-- 🎥 背景视频 -->
 <video class="hero-video-bg" autoplay loop muted playsinline>
   <source src="./bgvideo.mp4" type="video/mp4">
 </video>
@@ -274,11 +274,11 @@ html, body {
   </div>
 </div>
 
-<!-- 标题 -->
+<!-- 标题区 -->
 <div class="header">
   <div class="eyebrow">Welcome Aboard</div>
   <h1 class="title">Asterum Shore</h1>
-  <div class="subtitle">A Birthday Cafe for Yejun · Happy Birthday, Our Captain 🐬💙</div>
+  <div class="subtitle">A Birthday Cafe for Yejun · Happy Birthday, Our Captain 🐬</div>
 </div>
 
 <!-- 海洋舞台 -->
@@ -358,21 +358,21 @@ html, body {
     <button class="btn btn-coral" id="downloadBtn">📸 Save / Download Ticket</button>
 
     <div class="social-row">
-      <a class="btn btn-outline" id="twitterLink" href="https://twitter.com" target="_blank">🐦 Twitter / X</a>
-      <a class="btn btn-outline" id="instagramLink" href="https://instagram.com" target="_blank">📸 Instagram</a>
+      <a class="btn btn-outline" href="https://twitter.com" target="_blank">🐦 Twitter / X</a>
+      <a class="btn btn-outline" href="https://instagram.com" target="_blank">📸 Instagram</a>
     </div>
   </div>
 </div>
 
 <script>
-/* 🔗 文件路径 */
+// 配置文件路径
 const BGM_URL = "./yejuncoverbgm.mp3"; 
 const PASSENGER_PHOTO_URL = "./plli.jpg"; 
 
 const pImg = document.getElementById('passengerImg');
 if (pImg) pImg.src = PASSENGER_PHOTO_URL;
 
-/* 🌊 海浪音效 */
+// 🌊 海浪音效自动播放
 const wavesAudio = document.getElementById('wavesAudio');
 let wavesStarted = false;
 
@@ -380,19 +380,16 @@ function startWaves() {
   if (wavesStarted || !wavesAudio) return;
   wavesAudio.play().then(() => {
     wavesStarted = true;
-    ['click', 'touchstart', 'mousemove', 'scroll', 'keydown'].forEach(evt => {
-      window.removeEventListener(evt, startWaves);
-    });
   }).catch(() => {});
 }
 
 if (wavesAudio) wavesAudio.volume = 0.5;
 
-['click', 'touchstart', 'mousemove', 'scroll', 'keydown'].forEach(evt => {
+['click', 'touchstart', 'mousemove', 'keydown'].forEach(evt => {
   window.addEventListener(evt, startWaves, { once: true });
 });
 
-/* 🎵 BGM 播放器 */
+// 🎵 BGM 播放器
 const bgmAudio = document.getElementById('bgmAudio');
 const bgmRow = document.getElementById('bgmRow');
 const bgmSub = document.getElementById('bgmSub');
@@ -407,7 +404,7 @@ if (bgmRow) {
         bgmRow.classList.add('playing');
         if (bgmSub) bgmSub.textContent = "Playing...";
       }).catch(err => {
-        alert("无法播放！请确认 yejuncoverbgm.mp3 存在。");
+        alert("提示：未找到音频文件 yejuncoverbgm.mp3，请检查文件名！");
       });
     } else {
       bgmAudio.pause();
@@ -417,7 +414,7 @@ if (bgmRow) {
   });
 }
 
-/* 🐬 海豚智能游走与左右转向 */
+// 🐬 海豚智能游走与转向
 const dolphin = document.getElementById('dolphin');
 let currentDolphinX = 20;
 
@@ -426,7 +423,6 @@ function swimDolphin() {
   const nextX = 5 + Math.random() * 60;
   const nextY = 10 + Math.random() * 50;
   
-  // 左右判断：往左游镜像翻转，往右游正常
   if (nextX < currentDolphinX) {
     dolphin.style.transform = 'scaleX(-1)';
   } else {
@@ -441,6 +437,92 @@ function swimDolphin() {
 }
 swimDolphin();
 
-/* 点击海豚：翻滚 360 度 */
+// 点击海豚：翻转 360 度 + 气泡
 const dolphinInner = document.getElementById('dolphinInner');
-const msgs = ["HAPPY YEJUN DAY! 🎂", "Welcome to Asterum!", "May your ocean stay blue
+const msgs = ["HAPPY YEJUN DAY! 🎂", "Welcome to Asterum!", "May your ocean stay blue 💙", "PLLI ❤️ YEJUN"];
+
+if (dolphin) {
+  dolphin.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (dolphinInner) {
+      dolphinInner.classList.add('flip-spin');
+      setTimeout(() => dolphinInner.classList.remove('flip-spin'), 800);
+    }
+
+    const bubble = document.getElementById('speechBubble');
+    if (bubble) {
+      bubble.textContent = msgs[Math.floor(Math.random() * msgs.length)];
+      bubble.classList.add('show');
+      setTimeout(() => bubble.classList.remove('show'), 2500);
+    }
+  });
+}
+
+// 🍾 漂流瓶游走
+const bottle = document.getElementById('bottle');
+function floatBottle() {
+  if (!bottle) return;
+  const nextX = 10 + Math.random() * 70;
+  const nextY = 30 + Math.random() * 45;
+  
+  bottle.style.left = nextX + '%';
+  bottle.style.top = nextY + '%';
+  
+  setTimeout(floatBottle, 8000);
+}
+floatBottle();
+
+if (bottle) {
+  bottle.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const modal = document.getElementById('nameModal');
+    if (modal) modal.classList.add('open');
+  });
+}
+
+function closeModal(id) { 
+  const modal = document.getElementById(id);
+  if (modal) modal.classList.remove('open'); 
+}
+
+// 🎫 生成船票
+const genBtn = document.getElementById('genBtn');
+if (genBtn) {
+  genBtn.addEventListener('click', () => {
+    const input = document.getElementById('nameInput');
+    const name = (input && input.value.trim()) ? input.value.trim() : "PLLI";
+    
+    const pName = document.getElementById('pName');
+    const stubPName = document.getElementById('stubPName');
+    if (pName) pName.textContent = name.toUpperCase();
+    if (stubPName) stubPName.textContent = name.toUpperCase();
+    
+    closeModal('nameModal');
+    const ticketModal = document.getElementById('ticketModal');
+    if (ticketModal) ticketModal.classList.add('open');
+  });
+}
+
+// 📸 船票下载
+const downloadBtn = document.getElementById('downloadBtn');
+if (downloadBtn) {
+  downloadBtn.addEventListener('click', async () => {
+    const card = document.getElementById('ticketCard');
+    if (typeof html2canvas !== 'undefined' && card) {
+      try {
+        const canvas = await html2canvas(card, {
+          scale: 3, backgroundColor: '#FAF4E8', useCORS: true, allowTaint: true, logging: false
+        });
+        const a = document.createElement('a');
+        a.download = `Yejun_Birthday_Cafe_Ticket.png`;
+        a.href = canvas.toDataURL('image/png');
+        a.click();
+      } catch (err) {
+        alert("下载失败，请检查图片路径！");
+      }
+    }
+  });
+}
+</script>
+</body>
+</html>
