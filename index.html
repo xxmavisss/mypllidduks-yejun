@@ -17,7 +17,7 @@
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
   import { getDatabase, ref, push, onValue, remove } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-  // 1. 你的真实 Firebase 配置
+  // 1. Firebase 配置
   const firebaseConfig = {
     apiKey: "AIzaSyAJwhXT6yxv39D6IZkYjDp0ABQkNQyORP0",
     authDomain: "mpd-yejun.firebaseapp.com",
@@ -43,24 +43,12 @@
     }
   });
 
-  let titleClickCount = 0;
-  const titleEl = document.querySelector('.title');
-  if (titleEl) {
-    titleEl.addEventListener('click', () => {
-      titleClickCount++;
-      if (titleClickCount >= 5) {
-        toggleAdminMode();
-        titleClickCount = 0;
-      }
-    });
-  }
-
   function toggleAdminMode() {
     if (!isAdmin) {
       const pwd = prompt("🔐 请输入管理员密码/暗号以启用删除功能：");
       if (pwd === ADMIN_PASSWORD) {
         isAdmin = true;
-        alert("✅ 已进入管理员模式！现在点击海面上的漂流瓶或水母即可进行删除。");
+        alert("✅ 已进入管理员模式！点击留言图标即可删除。");
       } else if (pwd !== null) {
         alert("❌ 密码错误！");
       }
@@ -70,14 +58,16 @@
     }
   }
 
-  // 挂载到全局供 HTML 调用
+  // 发送留言
   window.releaseMessage = function() {
     const nameInput = document.getElementById('msgNameInput');
     const contentInput = document.getElementById('msgContentInput');
     
     const name = nameInput.value.trim() || 'PLLI';
     const content = contentInput.value.trim();
-    const selectedType = document.querySelector('input[name="avatarType"]:checked').value;
+    
+    const avatarTypeEl = document.querySelector('input[name="avatarType"]:checked');
+    const selectedType = avatarTypeEl ? avatarTypeEl.value : 'bottle';
 
     if (!content) {
       alert("Please enter a birthday wish for Yejun! 💙");
@@ -88,18 +78,19 @@
       name: name,
       content: content,
       type: selectedType,
-      posX: 10 + Math.random() * 75,
-      posY: 35 + Math.random() * 50,
+      posX: Math.floor(5 + Math.random() * 85),
+      posY: Math.floor(15 + Math.random() * 70),
       timestamp: Date.now()
     }).then(() => {
       contentInput.value = '';
       alert('Your wish has been released to the ocean! 🌊💙');
     }).catch((err) => {
+      console.error(err);
       alert('发送失败，请检查网络或 Firebase 配置！');
     });
   };
 
-  // 实时监听并渲染海面上的所有留言
+  // 实时渲染海面留言（已加固旧数据兜底 + 图片 404 容错）
   onValue(messagesRef, (snapshot) => {
     const messageOcean = document.getElementById('messageOcean');
     if (!messageOcean) return;
@@ -111,13 +102,22 @@
     Object.keys(data).forEach((key) => {
       const msg = data[key];
       
+      // 防护 1：兼容旧数据缺少坐标/类型的情况
+      const posX = (msg.posX !== undefined && msg.posX !== null) ? msg.posX : Math.floor(10 + Math.random() * 75);
+      const posY = (msg.posY !== undefined && msg.posY !== null) ? msg.posY : Math.floor(20 + Math.random() * 60);
+      const type = msg.type || 'bottle';
+
       const item = document.createElement('div');
       item.className = 'floating-message-item';
-      item.style.left = msg.posX + '%';
-      item.style.top = msg.posY + '%';
+      item.style.left = posX + '%';
+      item.style.top = posY + '%';
 
-      const imgSrc = msg.type === 'bottle' ? './bottle.png' : './jellyfish.png';
-      item.innerHTML = `<img src="${imgSrc}" alt="${msg.type}">`;
+      // 防护 2：如果图片 404 找不到，自动降级显示可爱 Emoji (🍾 / 🪼)
+      const imgSrc = type === 'bottle' ? './bottle.png' : './jellyfish.png';
+      const fallbackEmoji = type === 'bottle' ? '🍾' : '🪼';
+      
+      item.innerHTML = `<img src="${imgSrc}" alt="${type}" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                        <span style="display:none; font-size:40px; filter:drop-shadow(0 4px 10px rgba(0,0,0,0.5));">${fallbackEmoji}</span>`;
 
       item.addEventListener('click', (e) => {
         e.stopPropagation();
