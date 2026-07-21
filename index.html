@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Asterum Shore · Yejun Birthday Cafe</title>
+<title>Whisper from the Deep Blue · Yejun Birthday Cafe</title>
 
 <!-- Google Fonts -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -30,42 +30,33 @@ html, body {
   margin: 0; padding: 0; min-height: 100vh;
   font-family: 'Poppins', sans-serif;
   color: #fff;
-  background: radial-gradient(circle at 50% 30%, #173B5C 0%, #0A192F 70%, #050C16 100%);
-  background-attachment: fixed;
+  background: #0A192F;
   overflow-x: hidden;
 }
 
-/* 🌊 背景视频容器（确保铺满全屏并在最底层） */
+/* 🌊 背景视频容器 */
 .hero-bg {
   position: fixed; 
   inset: 0; 
-  z-index: -10; /* 放到最底层 */
+  z-index: -10;
   overflow: hidden;
-  background: #0A192F; /* 视频未加载出来时的备用底色 */
+  background: #0A192F;
 }
 
-/* 🎥 视频标签本身的自适应样式 */
 .hero-bg video {
   width: 100vw;
   height: 100vh;
-  object-fit: cover; /* 保证视频铺满不拉伸 */
+  object-fit: cover;
   position: absolute;
   top: 0;
   left: 0;
 }
 
-/* 🌟 给视频覆盖一层极薄的暗色遮罩（防止背景太亮导致白色文字看不清） */
+/* 🌟 暗色柔和遮罩（提高文字可读性） */
 .hero-bg::after {
   content: ''; 
   position: absolute; 
   inset: 0;
-  background: rgba(10, 25, 47, 0.35); /* 数字 0.35 可以调整暗度，越小视频越亮 */
-  pointer-events: none;
-}
-
-/* 浅色半透明遮罩 */
-.video-overlay {
-  position: fixed; inset: 0; z-index: -1;
   background: rgba(10, 25, 47, 0.35);
   pointer-events: none;
 }
@@ -105,8 +96,8 @@ html, body {
 /* Header 标题区 */
 .header {
   position: relative; z-index: 5; text-align: center;
-  padding: 60px 20px 10px;
-  pointer-events: none; /* 避免挡住海豚与漂流瓶的点击 */
+  padding: 70px 20px 10px;
+  pointer-events: none;
 }
 .eyebrow { font-size: 11px; letter-spacing: 4px; text-transform: uppercase; color: var(--gold-bright); opacity: 0.9; }
 .title {
@@ -120,14 +111,14 @@ html, body {
 
 /* 海域舞台 */
 .ocean-stage {
-  position: relative; width: 100%; height: 65vh; min-height: 500px;
+  position: relative; width: 100%; height: 60vh; min-height: 450px;
   z-index: 10;
 }
 
-/* 🐬 海豚：280px 大尺寸 */
+/* 🐬 海豚 */
 .dolphin-wrapper {
   position: absolute; left: 20%; top: 25%;
-  width: 280px; cursor: pointer; z-index: 20;
+  width: 240px; cursor: pointer; z-index: 20;
   transition: left 6s ease-in-out, top 6s ease-in-out, transform 0.5s ease-in-out;
 }
 .dolphin-inner {
@@ -158,10 +149,10 @@ html, body {
 }
 .speech-bubble.show { opacity: 1; transform: translateX(-50%) scale(1); }
 
-/* 🍾 漂流瓶：180px 大尺寸 */
+/* 🍾 漂流瓶 */
 .bottle-wrapper {
   position: absolute; left: 45%; top: 55%;
-  width: 180px; cursor: pointer; z-index: 30;
+  width: 150px; cursor: pointer; z-index: 30;
   transition: left 8s ease-in-out, top 8s ease-in-out;
 }
 .bottle-inner {
@@ -259,10 +250,12 @@ html, body {
   .audio-row { padding: 2px 4px; }
   .audio-row .row-label { font-size: 10px; }
   .audio-row .row-sub { font-size: 8px; }
-  .header { padding-top: 50px; }
   
-  .dolphin-wrapper { width: 180px; }
-  .bottle-wrapper { width: 120px; }
+  .header { padding-top: 75px; }
+  .ocean-stage { height: 50vh; min-height: 300px; }
+  
+  .dolphin-wrapper { width: 140px; }
+  .bottle-wrapper { width: 100px; }
 
   .ticket { flex-direction: column; }
   .ticket-stub { width: 100%; border-left: none; border-top: 2px dashed #C5B396; }
@@ -271,11 +264,12 @@ html, body {
 </head>
 <body>
 
-<!-- 🎥 背景视频 -->
-<video class="hero-video-bg" autoplay loop muted playsinline>
-  <source src="./bgvideo.mp4" type="video/mp4">
-</video>
-<div class="video-overlay"></div>
+<!-- 🎥 背景视频结构修复 -->
+<div class="hero-bg">
+  <video autoplay loop muted playsinline>
+    <source src="./bgvideo.mp4" type="video/mp4">
+  </video>
+</div>
 
 <!-- 音频轨 -->
 <audio id="bgmAudio" loop></audio>
@@ -296,7 +290,7 @@ html, body {
 <!-- 标题区 -->
 <div class="header">
   <div class="eyebrow">Welcome Aboard</div>
-  <h1 class="title">Asterum Shore</h1>
+  <h1 class="title">Whisper from the Deep Blue</h1>
   <div class="subtitle">A Birthday Cafe for Yejun · Happy Birthday, Our Captain 🐬</div>
 </div>
 
@@ -533,7 +527,7 @@ if (downloadBtn) {
           scale: 3, backgroundColor: '#FAF4E8', useCORS: true, allowTaint: true, logging: false
         });
         const a = document.createElement('a');
-        a.download = `Yejun_Birthday_Cafe_Ticket.png`;
+        a.download = `Whisper_from_the_Deep_Blue_Ticket.png`;
         a.href = canvas.toDataURL('image/png');
         a.click();
       } catch (err) {
