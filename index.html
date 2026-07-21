@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Asterum Shore · Yejun Birthday Cafe</title>
+<title>Whisper from the Deep Blue · Yejun Birthday Cafe</title>
 
 <!-- Google Fonts -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
-<!-- html2canvas 用于下载船票 -->
+<!-- html2canvas 用于生成/下载船票图片 -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
 <style>
@@ -26,213 +26,193 @@
 }
 
 * { box-sizing: border-box; }
+
 html, body {
   margin: 0; padding: 0; min-height: 100vh;
   font-family: 'Poppins', sans-serif;
   color: #fff;
-  background: var(--deep-blue);
+  background: transparent !important;
   overflow-x: hidden;
 }
 
-/* ============================================================
-   🌊 动态梦幻海洋背景
-============================================================ */
-.hero-bg {
-  position: fixed; inset: 0; z-index: -2;
-  background: linear-gradient(180deg, #091D2C 0%, #0E364A 40%, #154D63 70%, #1F6B7E 100%);
+/* ✨ 鼠标尾迹 Canvas */
+#trailCanvas {
+  position: fixed; top: 0; left: 0;
+  width: 100vw; height: 100vh;
+  pointer-events: none;
+  z-index: 99;
 }
+
+/* 🎥 背景视频容器 */
+.hero-bg {
+  position: fixed; 
+  top: 0; left: 0; 
+  width: 100vw; height: 100vh;
+  z-index: -1; 
+  overflow: hidden;
+  background: #0A192F;
+}
+
+.hero-bg video {
+  width: 100%; height: 100%;
+  object-fit: cover; position: absolute; top: 0; left: 0;
+}
+
 .hero-bg::after {
   content: ''; position: absolute; inset: 0;
-  background: radial-gradient(circle at 50% 20%, rgba(245, 215, 139, 0.18) 0%, transparent 60%);
-  animation: bgGlow 8s ease-in-out infinite alternate;
-}
-@keyframes bgGlow {
-  0% { opacity: 0.5; }
-  100% { opacity: 1; }
+  background: rgba(10, 25, 47, 0.2); 
+  pointer-events: none;
 }
 
-/* 顶部导航栏（含右侧按钮） */
+/* 顶部导航栏布局 */
 .top-nav {
-  position: absolute; top: 20px; left: 20px; right: 20px;
-  display: flex; justify-content: flex-end; align-items: center; z-index: 90;
+  position: fixed; top: 18px; left: 18px; right: 18px;
+  display: flex; justify-content: space-between; align-items: center;
+  z-index: 100; pointer-events: none;
 }
-.nav-actions { display: flex; gap: 10px; align-items: center; }
+
+/* ↗️ 右上角/快捷菜单与声音面板 */
+.nav-actions {
+  display: flex; gap: 10px; align-items: center;
+  pointer-events: auto; margin-left: auto;
+}
+
 .nav-btn {
   background: var(--glass-bg);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
   border: 1px solid var(--glass-border);
-  color: #fff; padding: 8px 16px; border-radius: 999px;
-  font-size: 12px; font-weight: 500; cursor: pointer;
-  display: inline-flex; align-items: center; gap: 6px;
-  text-decoration: none; transition: all 0.2s;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+  color: #fff; text-decoration: none; font-size: 11px; font-weight: 500;
+  padding: 8px 14px; border-radius: 16px; transition: all 0.2s;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.3); display: flex; align-items: center; gap: 5px;
 }
-.nav-btn:hover { background: rgba(255,255,255,0.2); transform: translateY(-2px); }
+.nav-btn:hover {
+  background: rgba(23, 74, 91, 0.85); border-color: var(--gold-bright);
+  transform: translateY(-2px);
+}
 
-/* 音频控制面板 */
 .audio-panel {
-  position: fixed; top: 76px; right: 20px; z-index: 80;
   background: var(--glass-bg);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
   border: 1px solid var(--glass-border);
-  border-radius: 18px; padding: 12px 16px;
+  border-radius: 18px; padding: 6px 12px;
   box-shadow: 0 12px 32px rgba(0,0,0,0.4);
-  min-width: 210px;
-}
-.audio-panel .panel-title {
-  font-size: 10px; letter-spacing: 2px; text-transform: uppercase;
-  color: var(--gold-bright); font-weight: 700; margin-bottom: 6px;
 }
 .audio-row {
-  display: flex; align-items: center; gap: 10px;
-  cursor: pointer; padding: 6px; border-radius: 10px;
-  transition: background 0.2s;
+  display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 2px 4px;
+  user-select: none;
 }
-.audio-row:hover { background: rgba(255,255,255,0.08); }
 .audio-row .icon-btn {
-  width: 28px; height: 28px; border-radius: 50%;
+  width: 26px; height: 26px; border-radius: 50%;
   background: linear-gradient(135deg, var(--gold-accent), #B8863F);
   display: flex; align-items: center; justify-content: center;
   font-size: 12px; flex-shrink: 0; color: #10202B; font-weight: bold;
 }
 .audio-row.playing .icon-btn { background: #52D6B8; }
-.audio-row .row-label { font-size: 12px; font-weight: 500; }
+.audio-row .row-label { font-size: 11px; font-weight: 500; }
 .audio-row .row-sub { font-size: 9px; color: rgba(255,255,255,0.6); }
 
 /* Header 标题区 */
 .header {
   position: relative; z-index: 5; text-align: center;
-  padding: 50px 20px 10px;
+  padding: 80px 20px 10px; pointer-events: none;
 }
 .eyebrow { font-size: 11px; letter-spacing: 4px; text-transform: uppercase; color: var(--gold-bright); opacity: 0.9; }
 .title {
   font-family: 'Cinzel', serif; font-weight: 700;
-  font-size: clamp(28px, 5vw, 48px); margin: 8px 0;
+  font-size: clamp(24px, 5vw, 48px); margin: 6px 0;
   background: linear-gradient(180deg, #FFFFFF 30%, var(--gold-bright) 100%);
   -webkit-background-clip: text; background-clip: text; color: transparent;
   text-shadow: 0 4px 20px rgba(0,0,0,0.4);
 }
-.subtitle { font-size: 13px; color: rgba(255,255,255,0.85); font-weight: 300; }
+.subtitle { font-size: 12px; color: rgba(255,255,255,0.85); font-weight: 300; }
+
+/* ⏳ 倒计时牌样式 */
+.timer-container {
+  margin: 16px auto 0;
+  display: inline-flex; flex-direction: column; align-items: center;
+  background: var(--glass-bg); backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border); padding: 10px 20px; border-radius: 20px;
+  pointer-events: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+}
+.timer-tabs {
+  display: flex; gap: 8px; margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.15);
+  padding-bottom: 6px;
+}
+.tab-btn {
+  background: none; border: none; color: rgba(255,255,255,0.6);
+  font-size: 10px; font-weight: 600; cursor: pointer; padding: 2px 8px;
+  border-radius: 10px; transition: all 0.2s;
+}
+.tab-btn.active { color: var(--gold-bright); background: rgba(255,255,255,0.12); }
+
+.timer-box { display: flex; gap: 12px; text-align: center; }
+.time-unit { display: flex; flex-direction: column; align-items: center; min-width: 38px; }
+.time-num { font-family: 'Cinzel', serif; font-size: 18px; font-weight: 700; color: #fff; }
+.time-label { font-size: 8px; text-transform: uppercase; color: var(--gold-accent); letter-spacing: 1px; }
 
 /* 海域舞台 */
 .ocean-stage {
-  position: relative; width: 100%; height: 48vh; min-height: 350px;
-  z-index: 5;
+  position: relative; width: 100%; height: 55vh; min-height: 400px; z-index: 10;
 }
 
-/* 🐬 海豚：自然游走动画 */
+/* 🐬 海豚 */
 .dolphin-wrapper {
-  position: absolute; left: 15%; top: 40%;
-  width: 110px; height: 110px; cursor: pointer; z-index: 10;
+  position: absolute; left: 20%; top: 25%;
+  width: 240px; cursor: pointer; z-index: 20;
   transition: left 6s ease-in-out, top 6s ease-in-out, transform 0.5s ease-in-out;
 }
 .dolphin-inner {
-  width: 100%; height: 100%;
-  transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  width: 100%; transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
   animation: dolphinFloat 3.5s ease-in-out infinite;
 }
-@keyframes dolphinFloat {
-  0%, 100% { transform: translateY(0) rotate(-3deg); }
-  50% { transform: translateY(-14px) rotate(4deg); }
-}
-.dolphin-svg { width: 100%; height: 100%; filter: drop-shadow(0 8px 16px rgba(0,0,0,0.4)); }
+.dolphin-img { width: 100%; height: auto; display: block; filter: drop-shadow(0 15px 25px rgba(0,0,0,0.5)); }
 .dolphin-inner.flip-spin { transform: rotate(360deg) scale(1.15); }
 
-/* 🐋 Meymu 样式 */
-.meymu-wrapper {
-  position: absolute; left: 70%; top: 35%;
-  width: 100px; height: 100px; cursor: pointer; z-index: 10;
-  transition: left 7s ease-in-out, top 7s ease-in-out, transform 0.5s ease-in-out;
+@keyframes dolphinFloat {
+  0%, 100% { transform: translateY(0) rotate(-3deg); }
+  50% { transform: translateY(-20px) rotate(4deg); }
 }
-.meymu-inner {
-  width: 100%; height: 100%;
-  transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-  animation: meymuFloat 4s ease-in-out infinite;
-}
-@keyframes meymuFloat {
-  0%, 100% { transform: translateY(0) rotate(3deg); }
-  50% { transform: translateY(-16px) rotate(-4deg); }
-}
-.meymu-img { width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 8px 16px rgba(0,0,0,0.4)); display: block; }
-.meymu-inner.flip-spin { transform: rotate(360deg) scale(1.15); }
 
-/* 寄语气泡 */
 .speech-bubble {
-  position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%) scale(0.8);
+  position: absolute; bottom: 105%; left: 50%; transform: translateX(-50%) scale(0.8);
   background: var(--paper-cream); color: var(--text-dark);
-  font-weight: 600; font-size: 12px; padding: 8px 14px; border-radius: 12px;
+  font-weight: 600; font-size: 14px; padding: 10px 18px; border-radius: 14px;
   box-shadow: 0 10px 25px rgba(0,0,0,0.3); white-space: nowrap;
   opacity: 0; pointer-events: none; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 .speech-bubble.show { opacity: 1; transform: translateX(-50%) scale(1); }
 
-/* 🍾 真正的玻璃漂流瓶 */
+/* 🍾 漂流瓶 */
 .bottle-wrapper {
-  position: absolute; left: 50%; bottom: 15%; transform: translateX(-50%);
-  width: 70px; height: 130px; cursor: pointer; z-index: 12;
-  animation: bottleSway 4s ease-in-out infinite;
+  position: absolute; left: 45%; top: 55%;
+  width: 150px; cursor: pointer; z-index: 30;
+  transition: left 8s ease-in-out, top 8s ease-in-out;
 }
+.bottle-inner { width: 100%; animation: bottleSway 4s ease-in-out infinite; }
+.bottle-img { width: 100%; height: auto; display: block; filter: drop-shadow(0 15px 25px rgba(0,0,0,0.5)); }
+
 @keyframes bottleSway {
-  0%, 100% { transform: translateX(-50%) translateY(0) rotate(-5deg); }
-  50% { transform: translateX(-50%) translateY(-12px) rotate(6deg); }
+  0%, 100% { transform: translateY(0) rotate(-6deg); }
+  50% { transform: translateY(-20px) rotate(8deg); }
 }
 .bottle-hint {
-  position: absolute; bottom: -32px; left: 50%; transform: translateX(-50%);
-  font-size: 10px; font-weight: 500; color: #fff; white-space: nowrap;
-  background: rgba(10, 25, 40, 0.6); backdrop-filter: blur(6px);
-  padding: 4px 10px; border-radius: 12px; border: 1px solid var(--glass-border);
-}
-
-/* ============================================================
-   ⏳ 倒计时区域 (Countdown Section)
-============================================================ */
-.countdown-section {
-  position: relative; z-index: 5; text-align: center;
-  padding: 10px 20px 40px; max-width: 600px; margin: 0 auto;
-}
-.countdown-card {
-  background: var(--glass-bg);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid var(--glass-border);
-  border-radius: 20px; padding: 20px;
-  box-shadow: 0 15px 35px rgba(0,0,0,0.4);
-}
-.countdown-title {
-  font-size: 11px; letter-spacing: 3px; text-transform: uppercase;
-  color: var(--gold-bright); font-weight: 700; margin-bottom: 14px;
-}
-.countdown-grid {
-  display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;
-}
-.time-box {
-  background: rgba(10, 25, 40, 0.5);
-  border: 1px solid rgba(255,255,255,0.1);
-  border-radius: 12px; padding: 10px 5px;
-}
-.time-num {
-  font-family: 'Cinzel', serif; font-size: 24px; font-weight: 700;
-  color: #fff; text-shadow: 0 2px 10px rgba(245,215,139,0.3);
-}
-.time-label {
-  font-size: 9px; text-transform: uppercase; color: rgba(255,255,255,0.6);
-  margin-top: 4px; letter-spacing: 1px;
+  position: absolute; bottom: -40px; left: 50%; transform: translateX(-50%);
+  font-size: 12px; font-weight: 500; color: #fff; white-space: nowrap;
+  background: rgba(10, 25, 40, 0.8); backdrop-filter: blur(8px);
+  padding: 8px 16px; border-radius: 20px; border: 1px solid var(--glass-border);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.3);
 }
 
 /* Modal 弹窗 */
 .modal-overlay {
   position: fixed; inset: 0; z-index: 200;
-  background: rgba(3, 10, 18, 0.75);
-  backdrop-filter: blur(8px);
+  background: rgba(3, 10, 18, 0.75); backdrop-filter: blur(8px);
   display: none; align-items: center; justify-content: center; padding: 20px;
 }
 .modal-overlay.open { display: flex; }
 
 .glass-card {
-  width: 100%; max-width: 440px;
-  background: var(--glass-bg);
+  width: 100%; max-width: 440px; background: var(--glass-bg);
   backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
   border: 1px solid var(--glass-border); border-radius: 24px;
   padding: 28px 24px; position: relative; text-align: center;
@@ -249,7 +229,7 @@ html, body {
 }
 .name-input::placeholder { color: rgba(255,255,255,0.5); }
 
-/* 🎫 复古航海船票排版 */
+/* 🎫 船票 */
 .ticket-container { max-width: 500px; text-align: left; }
 .ticket {
   display: flex; background: var(--paper-cream); color: var(--text-dark);
@@ -261,7 +241,7 @@ html, body {
 .ticket-route { display: flex; align-items: center; gap: 10px; margin: 12px 0; }
 .route-code { font-family: 'Cinzel'; font-weight: 700; font-size: 14px; }
 .route-line { flex: 1; height: 1px; background: #C5B396; position: relative; }
-.route-line::after { content: '🐬'; position: absolute; right: 0; top: -10px; font-size: 12px; }
+.route-line::after { content: '🚢'; position: absolute; right: 0; top: -10px; font-size: 12px; }
 
 .ticket-body { display: flex; gap: 12px; align-items: center; margin-bottom: 10px; }
 .passenger-img { width: 55px; height: 55px; border-radius: 10px; object-fit: cover; border: 2px solid var(--gold-accent); }
@@ -289,7 +269,31 @@ html, body {
 .social-row { display: flex; gap: 8px; margin-top: 10px; }
 .btn-outline { background: rgba(255,255,255,0.08); color: #fff; border: 1px solid rgba(255,255,255,0.25); text-decoration: none; font-size: 11px; }
 
-@media (max-width: 480px) {
+/* ⚓ 底部署名 */
+.footer { position: relative; z-index: 10; text-align: center; padding: 15px 20px 25px; }
+.footer-text {
+  display: inline-block; font-size: 12px; letter-spacing: 1.5px;
+  color: rgba(255, 255, 255, 0.75); background: var(--glass-bg);
+  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  border: 1px solid var(--glass-border); padding: 6px 18px; border-radius: 20px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.2); text-decoration: none; transition: all 0.3s ease;
+}
+.footer-text:hover {
+  background: rgba(23, 74, 91, 0.85); border-color: var(--gold-accent);
+  transform: translateY(-2px); box-shadow: 0 6px 20px rgba(226, 185, 111, 0.3);
+}
+.footer-text strong {
+  color: var(--gold-bright); font-weight: 600; text-decoration: underline; text-underline-offset: 3px;
+}
+
+/* 📱 移动端适配 */
+@media (max-width: 600px) {
+  .top-nav { top: 10px; left: 10px; right: 10px; }
+  .nav-btn span { display: none; }
+  .header { padding-top: 65px; }
+  .ocean-stage { height: 50vh; min-height: 300px; }
+  .dolphin-wrapper { width: 140px; }
+  .bottle-wrapper { width: 100px; }
   .ticket { flex-direction: column; }
   .ticket-stub { width: 100%; border-left: none; border-top: 2px dashed #C5B396; }
 }
@@ -297,128 +301,102 @@ html, body {
 </head>
 <body>
 
-<div class="hero-bg"></div>
+<!-- ✨ 鼠标跟随 Canvas -->
+<canvas id="trailCanvas"></canvas>
 
-<!-- 顶部导航区（含你的跳转链接） -->
+<!-- 🎥 背景视频 -->
+<div class="hero-bg">
+  <video autoplay loop muted playsinline>
+    <source src="./bgvideo.mp4" type="video/mp4">
+  </video>
+</div>
+
+<!-- 顶部导航区（含右侧按钮与 Sound Studio） -->
 <div class="top-nav">
   <div class="nav-actions">
-    <a class="nav-btn" href="https://x.com/MYPlliDduks" target="_blank">🎫 <span>Get Donation Kit</span></a>
-    <a class="nav-btn" href="https://x.com/MYPlliDduks" target="_blank">🌐 <span>Twitter</span></a>
+    <a class="nav-btn" href="https://forms.gle/FpWn4BuPp7VAon7W8" target="_blank">🛍️ <span>Get Donation Kit</span></a>
+    <a class="nav-btn" href="https://t.me/+QfZM4CksHfM2ZjVl" target="_blank">🌐 <span>More Updates</span></a>
+    
+    <!-- 音频控制 -->
+    <div class="audio-panel">
+      <div class="audio-row" id="bgmRow">
+        <div class="icon-btn">🎧</div>
+        <div>
+          <div class="row-label">Yejun's Playlist</div>
+          <div class="row-sub" id="bgmSub">Tap play</div>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 
 <!-- 音频轨 -->
 <audio id="bgmAudio" loop></audio>
-<audio id="wavesAudio" loop></audio>
-<audio id="corkAudio"></audio>
+<audio id="wavesAudio" loop src="./seawavesbgm.mp3"></audio>
 
-<!-- 右上角声音面板 -->
-<div class="audio-panel">
-  <div class="panel-title">Sound Studio</div>
-  <div class="audio-row" id="bgmRow">
-    <div class="icon-btn">🎵</div>
-    <div>
-      <div class="row-label">Yejun Playlist</div>
-      <div class="row-sub" id="bgmSub">Tap to play</div>
-    </div>
-  </div>
-  <div class="audio-row" id="wavesRow">
-    <div class="icon-btn">🌊</div>
-    <div>
-      <div class="row-label">Sea Waves</div>
-      <div class="row-sub" id="wavesSub">Tap to play</div>
-    </div>
-  </div>
-</div>
-
-<!-- Title -->
+<!-- 标题与倒计时区 -->
 <div class="header">
   <div class="eyebrow">Welcome Aboard</div>
-  <h1 class="title">Asterum Shore</h1>
-  <div class="subtitle">A Birthday Cafe for Yejun · Happy Birthday, Our Captain 🐬</div>
+  <h1 class="title">Whisper from the Deep Blue</h1>
+  <div class="subtitle">🇲🇾 Birthday Cafe for Yejun · Happy Birthday, Our Leader 🐬💙</div>
+
+  <!-- ⏳ 倒计时组件 -->
+  <div class="timer-container">
+    <div class="timer-tabs">
+      <button class="tab-btn active" id="tabBirthday" onclick="switchTimer('birthday')">🎂 Yejun's Birthday (09/12 KST)</button>
+      <button class="tab-btn" id="tabEvent" onclick="switchTimer('event')">🇲🇾 Yejun CSE: Whisper from the Deep Blue(09/19 MYT)</button>
+    </div>
+    <div class="timer-box">
+      <div class="time-unit"><span class="time-num" id="dDays">00</span><span class="time-label">Days</span></div>
+      <div class="time-num" style="font-size:14px; opacity:0.5; line-height:24px;">:</div>
+      <div class="time-unit"><span class="time-num" id="dHours">00</span><span class="time-label">Hours</span></div>
+      <div class="time-num" style="font-size:14px; opacity:0.5; line-height:24px;">:</div>
+      <div class="time-unit"><span class="time-num" id="dMins">00</span><span class="time-label">Mins</span></div>
+      <div class="time-num" style="font-size:14px; opacity:0.5; line-height:24px;">:</div>
+      <div class="time-unit"><span class="time-num" id="dSecs">00</span><span class="time-label">Secs</span></div>
+    </div>
+  </div>
 </div>
 
 <!-- 海洋舞台 -->
 <div class="ocean-stage">
-  <!-- 🐬 自由游走海豚 -->
+  <!-- 🐬 海豚 -->
   <div class="dolphin-wrapper" id="dolphin">
     <div class="speech-bubble" id="speechBubble">HAPPY YEJUN DAY! 🎂</div>
     <div class="dolphin-inner" id="dolphinInner">
-      <svg class="dolphin-svg" viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg">
-        <path d="M10,80 Q30,20 100,15 Q160,10 190,35 Q170,45 150,40 Q120,60 80,62 Q40,70 10,80 Z" fill="url(#dGrad)"/>
-        <defs>
-          <linearGradient id="dGrad" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stop-color="#F5D78B"/>
-            <stop offset="50%" stop-color="#2D7A8F"/>
-            <stop offset="100%" stop-color="#0E364A"/>
-          </linearGradient>
-        </defs>
-        <circle cx="165" cy="28" r="3" fill="#0A192F"/>
-      </svg>
+      <img src="./dolphin.png" class="dolphin-img" alt="Dolphin" />
     </div>
   </div>
 
-  <!-- 🐋 自由游走 Meymu -->
-  <div class="meymu-wrapper" id="meymu">
-    <div class="meymu-inner" id="meymuInner">
-      <img src="./meymu.png" class="meymu-img" alt="Meymu" />
-    </div>
-  </div>
-
-  <!-- 🍾 真正的精美玻璃漂流瓶 -->
+  <!-- 🍾 漂流瓶 -->
   <div class="bottle-wrapper" id="bottle">
-    <svg viewBox="0 0 100 200" xmlns="http://www.w3.org/2000/svg" style="width:100%; height:100%;">
-      <!-- 瓶塞 -->
-      <rect x="40" y="10" width="20" height="15" rx="3" fill="#D8A25E"/>
-      <!-- 瓶身 -->
-      <path d="M35,25 L65,25 L65,50 Q85,70 85,110 L85,170 Q85,185 70,185 L30,185 Q15,185 15,170 L15,110 Q15,70 35,25 Z" fill="rgba(255,255,255,0.18)" stroke="rgba(255,255,255,0.6)" stroke-width="2"/>
-      <!-- 瓶内卷轴信纸 -->
-      <rect x="35" y="100" width="30" height="50" rx="3" fill="#FAF4E8" transform="rotate(-10 50 125)"/>
-      <line x1="40" y1="112" x2="58" y2="108" stroke="#D8A25E" stroke-width="2" transform="rotate(-10 50 125)"/>
-      <line x1="40" y1="122" x2="55" y2="118" stroke="#D8A25E" stroke-width="2" transform="rotate(-10 50 125)"/>
-    </svg>
-    <div class="bottle-hint">Click the drift bottle to unlock ticket 🐬</div>
-  </div>
-</div>
-
-<!-- ⏳ 倒计时区域 -->
-<div class="countdown-section">
-  <div class="countdown-card">
-    <div class="countdown-title">Countdown to Yejun's Birthday Cafe 🎂</div>
-    <div class="countdown-grid">
-      <div class="time-box">
-        <div class="time-num" id="days">00</div>
-        <div class="time-label">Days</div>
-      </div>
-      <div class="time-box">
-        <div class="time-num" id="hours">00</div>
-        <div class="time-label">Hours</div>
-      </div>
-      <div class="time-box">
-        <div class="time-num" id="mins">00</div>
-        <div class="time-label">Mins</div>
-      </div>
-      <div class="time-box">
-        <div class="time-num" id="secs">00</div>
-        <div class="time-label">Secs</div>
-      </div>
+    <div class="bottle-inner">
+      <img src="./bottle.png" class="bottle-img" alt="Drift Bottle" />
     </div>
+    <div class="bottle-hint">Click the drift bottle to unlock your message</div>
   </div>
 </div>
 
-<!-- 姓名输入 Modal -->
+<!-- ⚓ 网页底部署名区 -->
+<div class="footer">
+  <a class="footer-text" href="https://lit.link/en/mypllidduks" target="_blank" rel="noopener noreferrer">
+    by <strong>MYPlliDduks</strong>
+  </a>
+</div>
+
+<!-- 输入名字 Modal -->
 <div class="modal-overlay" id="nameModal">
   <div class="glass-card">
     <button class="modal-close" onclick="closeModal('nameModal')">✕</button>
-    <div style="font-size:32px; margin-bottom:8px;">🍾✨</div>
+    <div style="font-size:32px; margin-bottom:8px;">✨</div>
     <h3 style="margin:0; font-family:'Cinzel'; color:var(--gold-bright);">You found a drift bottle!</h3>
-    <p style="font-size:12px; color:rgba(255,255,255,0.8); margin-top:6px;">Enter your name or PLLI nickname to unlock your commemorative boarding pass.</p>
+    <p style="font-size:12px; color:rgba(255,255,255,0.8); margin-top:6px;">Enter your name or PLLI nickname to unlock your "boarding pass".</p>
     <input type="text" id="nameInput" class="name-input" placeholder="Enter your name / PLLI nickname" maxlength="20" />
-    <button class="btn btn-primary" id="genBtn">Generate My Boarding Pass ✨</button>
+    <button class="btn btn-primary" id="genBtn">Generate My Boarding Pass 🎫</button>
   </div>
 </div>
 
-<!-- 船票 Modal -->
+<!-- 船票展示 Modal -->
 <div class="modal-overlay" id="ticketModal">
   <div class="glass-card ticket-container">
     <button class="modal-close" onclick="closeModal('ticketModal')">✕</button>
@@ -432,15 +410,23 @@ html, body {
         <div class="ticket-route">
           <div class="route-code">ASU<div style="font-size:8px; font-weight:400; color:#7A6B53;">ASTERUM</div></div>
           <div class="route-line"></div>
-          <div class="route-code">YBC<div style="font-size:8px; font-weight:400; color:#7A6B53;">YEJUN CAFE</div></div>
+          <div class="route-code">KL<div style="font-size:8px; font-weight:400; color:#7A6B53;">MALAYSIA</div></div>
         </div>
         <div class="ticket-body">
-          <img id="passengerImg" class="passenger-img" alt="Yejun/Cafe Photo" />
-          <div>
+          <img id="passengerImg" class="passenger-img" alt="PLLI Photo" />
+          <div style="flex: 1;">
             <div class="field-label">Passenger</div>
             <div class="field-value" id="pName">GUEST</div>
-            <div class="field-label" style="margin-top:4px;">Destination</div>
-            <div class="field-value" style="font-size:11px;">Yejun Birthday Cafe 🌊</div>
+            <div style="display: flex; gap: 12px; margin-top: 4px;">
+              <div>
+                <div class="field-label">Date</div>
+                <div class="field-value" style="font-size:10px;">19/09/2026 (Sat)</div>
+              </div>
+              <div>
+                <div class="field-label">Destination</div>
+                <div class="field-value" style="font-size:10px;">COMMON SPACE</div>
+              </div>
+            </div>
           </div>
         </div>
         <div style="font-size:10px; font-style:italic; color:#556677; border-top:1px dashed #D5C7B1; padding-top:6px;">
@@ -452,163 +438,295 @@ html, body {
         <div>
           <div class="field-label">Name</div>
           <div style="font-weight:700; font-size:11px;" id="stubPName">GUEST</div>
+          <div class="field-label" style="margin-top: 4px;">Date</div>
+          <div style="font-weight:700; font-size:9px; color: var(--ocean-teal);">19/09/2026</div>
         </div>
         <div style="font-size:8px; color:#888; letter-spacing:1px;">A1-2026-YJ</div>
       </div>
     </div>
 
     <div class="disclaimer">
-      ⚠️ NOTICE: This boarding pass is a commemorative souvenir for PLLI. Official venue entry requires showing your Gmail confirmation email and Reservation ID.
+      ⚠️ NOTICE: This boarding pass is a souvenir for PLLI. Official CSE venue entry requires showing your Gmail confirmation email and Reservation Name or SociaL Media ID.
     </div>
 
-    <button class="btn btn-coral" id="downloadBtn">📸 Save / Download Ticket</button>
+    <button class="btn btn-coral" id="downloadBtn">Save / Download Ticket</button>
 
     <div class="social-row">
-      <a class="btn btn-outline" id="twitterLink" href="https://twitter.com" target="_blank">🐦 Twitter / X</a>
-      <a class="btn btn-outline" id="instagramLink" href="https://instagram.com" target="_blank">📸 Instagram</a>
+      <a class="btn btn-outline" href="https://x.com/MYPlliDduks" target="_blank">Twitter / X</a>
+      <a class="btn btn-outline" href="https://www.instagram.com/mypllidduks/" target="_blank">Instagram</a>
     </div>
   </div>
 </div>
 
 <script>
-/* ============================================================================
-   🔗 音频与图片配置
-============================================================================ */
-const BGM_URL = "./yejuncoverbgm.mp3";  
-const WAVES_URL = "";         
-const CORK_URL = "";          
-const PASSENGER_PHOTO_URL = "https://i.pinimg.com/564x/f9/f3/81/f9f38103e07ffff8bbdc219b42f1108e.jpg"; 
+// 配置文件路径
+const BGM_URL = "./yejuncoverbgm.mp3"; 
+const PASSENGER_PHOTO_URL = "./plli.jpg"; 
 
-document.getElementById('passengerImg').src = PASSENGER_PHOTO_URL;
+const pImg = document.getElementById('passengerImg');
+if (pImg) pImg.src = PASSENGER_PHOTO_URL;
 
-/* 🎧 音频开关 */
-function bindAudio(rowId, audioId, subId, url) {
-  const audio = document.getElementById(audioId);
-  const row = document.getElementById(rowId);
-  const sub = document.getElementById(subId);
-  if (url) audio.src = url;
+// ✨ 1. 鼠标跟随星光尾迹 (Cursor Particle Effect)
+const canvas = document.getElementById('trailCanvas');
+const ctx = canvas.getContext('2d');
+let particles = [];
 
-  row.addEventListener('click', () => {
-    if (!audio.src) { sub.textContent = "No MP3 URL"; return; }
-    if (audio.paused) {
-      audio.play().catch(()=>{});
-      row.classList.add('playing');
-      sub.textContent = "Playing...";
+function resizeCanvas() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();
+
+class Particle {
+  constructor(x, y) {
+    this.x = x; this.y = y;
+    this.size = Math.random() * 4 + 1;
+    this.speedX = Math.random() * 2 - 1;
+    this.speedY = Math.random() * 2 - 1;
+    this.color = `hsl(${180 + Math.random() * 40}, 80%, 75%)`;
+    this.alpha = 1;
+  }
+  update() {
+    this.x += this.speedX; this.y += this.speedY;
+    if (this.size > 0.2) this.size -= 0.08;
+    this.alpha -= 0.02;
+  }
+  draw() {
+    ctx.save();
+    ctx.globalAlpha = Math.max(0, this.alpha);
+    ctx.fillStyle = this.color;
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  }
+}
+
+function handlePointer(x, y) {
+  for (let i = 0; i < 2; i++) {
+    particles.push(new Particle(x, y));
+  }
+}
+
+window.addEventListener('mousemove', (e) => handlePointer(e.clientX, e.clientY));
+window.addEventListener('touchmove', (e) => {
+  if(e.touches.length > 0) handlePointer(e.touches[0].clientX, e.touches[0].clientY);
+});
+
+function animateParticles() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  for (let i = 0; i < particles.length; i++) {
+    particles[i].update();
+    particles[i].draw();
+    if (particles[i].alpha <= 0 || particles[i].size <= 0.2) {
+      particles.splice(i, 1);
+      i--;
+    }
+  }
+  requestAnimationFrame(animateParticles);
+}
+animateParticles();
+
+// ⏳ 2. 倒计时逻辑
+// 艺俊生日：韩国 09/12 00:00 = 马来西亚 09/11 23:00 (UTC+8)
+const TARGET_BIRTHDAY = new Date('2026-09-11T23:00:00+08:00').getTime();
+// 活动开始：马来西亚 09/19 11:00 (UTC+8)
+const TARGET_EVENT = new Date('2026-09-19T11:00:00+08:00').getTime();
+
+let currentTarget = TARGET_BIRTHDAY;
+
+function switchTimer(type) {
+  const btnBday = document.getElementById('tabBirthday');
+  const btnEvt = document.getElementById('tabEvent');
+  if (type === 'birthday') {
+    currentTarget = TARGET_BIRTHDAY;
+    btnBday.classList.add('active');
+    btnEvt.classList.remove('active');
+  } else {
+    currentTarget = TARGET_EVENT;
+    btnEvt.classList.add('active');
+    btnBday.classList.remove('active');
+  }
+  updateTimer();
+}
+
+function updateTimer() {
+  const now = new Date().getTime();
+  const diff = currentTarget - now;
+
+  if (diff <= 0) {
+    document.getElementById('dDays').textContent = '00';
+    document.getElementById('dHours').textContent = '00';
+    document.getElementById('dMins').textContent = '00';
+    document.getElementById('dSecs').textContent = '00';
+    return;
+  }
+
+  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+  const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+  const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+  const secs = Math.floor((diff % (1000 * 60)) / 1000);
+
+  document.getElementById('dDays').textContent = String(days).padStart(2, '0');
+  document.getElementById('dHours').textContent = String(hours).padStart(2, '0');
+  document.getElementById('dMins').textContent = String(mins).padStart(2, '0');
+  document.getElementById('dSecs').textContent = String(secs).padStart(2, '0');
+}
+setInterval(updateTimer, 1000);
+updateTimer();
+
+// 🌊 海浪音效自动播放
+const wavesAudio = document.getElementById('wavesAudio');
+let wavesStarted = false;
+
+function startWaves() {
+  if (wavesStarted || !wavesAudio) return;
+  wavesAudio.play().then(() => { wavesStarted = true; }).catch(() => {});
+}
+if (wavesAudio) wavesAudio.volume = 0.5;
+
+['click', 'touchstart', 'mousemove', 'keydown'].forEach(evt => {
+  window.addEventListener(evt, startWaves, { once: true });
+});
+
+// 🎵 BGM 播放器
+const bgmAudio = document.getElementById('bgmAudio');
+const bgmRow = document.getElementById('bgmRow');
+const bgmSub = document.getElementById('bgmSub');
+
+if (bgmAudio) bgmAudio.src = BGM_URL;
+
+if (bgmRow) {
+  bgmRow.addEventListener('click', () => {
+    if (!bgmAudio) return;
+    if (bgmAudio.paused) {
+      bgmAudio.play().then(() => {
+        bgmRow.classList.add('playing');
+        if (bgmSub) bgmSub.textContent = "Playing...";
+      }).catch(err => {
+        alert("提示：未找到音频文件 yejuncoverbgm.mp3，Please check！");
+      });
     } else {
-      audio.pause();
-      row.classList.remove('playing');
-      sub.textContent = "Paused";
+      bgmAudio.pause();
+      bgmRow.classList.remove('playing');
+      if (bgmSub) bgmSub.textContent = "Paused";
     }
   });
 }
-bindAudio('bgmRow', 'bgmAudio', 'bgmSub', BGM_URL);
-bindAudio('wavesRow', 'wavesAudio', 'wavesSub', WAVES_URL);
 
-/* 🐬 海豚游走 */
+// 🐬 海豚智能游走与转向
 const dolphin = document.getElementById('dolphin');
-let currentDolphinX = 15;
+let currentDolphinX = 20;
+
 function swimDolphin() {
-  const nextX = 5 + Math.random() * 70;
-  const nextY = 25 + Math.random() * 40;
-  if (nextX < currentDolphinX) { dolphin.style.transform = 'scaleX(-1)'; }
-  else { dolphin.style.transform = 'scaleX(1)'; }
+  if (!dolphin) return;
+  const nextX = 5 + Math.random() * 60;
+  const nextY = 10 + Math.random() * 50;
+  
+  if (nextX < currentDolphinX) {
+    dolphin.style.transform = 'scaleX(-1)';
+  } else {
+    dolphin.style.transform = 'scaleX(1)';
+  }
+  
   currentDolphinX = nextX;
   dolphin.style.left = nextX + '%';
   dolphin.style.top = nextY + '%';
+  
   setTimeout(swimDolphin, 6000);
 }
 swimDolphin();
 
+// 点击海豚：翻转 360 度 + 气泡
 const dolphinInner = document.getElementById('dolphinInner');
-const msgs = ["HAPPY YEJUN DAY! 🎂", "Welcome to Asterum!", "May your ocean stay blue 💙", "PLLI ❤️ YEJUN"];
-dolphin.addEventListener('click', (e) => {
-  e.stopPropagation();
-  if (dolphinInner) {
-    dolphinInner.classList.add('flip-spin');
-    setTimeout(() => dolphinInner.classList.remove('flip-spin'), 800);
-  }
-  const bubble = document.getElementById('speechBubble');
-  bubble.textContent = msgs[Math.floor(Math.random()*msgs.length)];
-  bubble.classList.add('show');
-  setTimeout(() => bubble.classList.remove('show'), 2500);
-});
+const msgs = ["HAPPY YEJUN DAY! 🎂", "Welcome to Asterum!🌊", "NAM YEJUN!💙", "PLLI ❤️ YEJUN"];
 
-/* 🐋 Meymu 游走 */
-const meymu = document.getElementById('meymu');
-const meymuInner = document.getElementById('meymuInner');
-let currentMeymuX = 70;
-function swimMeymu() {
-  const nextX = 5 + Math.random() * 70;
-  const nextY = 25 + Math.random() * 40;
-  if (nextX < currentMeymuX) { meymu.style.transform = 'scaleX(-1)'; }
-  else { meymu.style.transform = 'scaleX(1)'; }
-  currentMeymuX = nextX;
-  meymu.style.left = nextX + '%';
-  meymu.style.top = nextY + '%';
-  setTimeout(swimMeymu, 7000);
+if (dolphin) {
+  dolphin.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (dolphinInner) {
+      dolphinInner.classList.add('flip-spin');
+      setTimeout(() => dolphinInner.classList.remove('flip-spin'), 800);
+    }
+
+    const bubble = document.getElementById('speechBubble');
+    if (bubble) {
+      bubble.textContent = msgs[Math.floor(Math.random() * msgs.length)];
+      bubble.classList.add('show');
+      setTimeout(() => bubble.classList.remove('show'), 2500);
+    }
+  });
 }
-swimMeymu();
 
-meymu.addEventListener('click', (e) => {
-  e.stopPropagation();
-  if (meymuInner) {
-    meymuInner.classList.add('flip-spin');
-    setTimeout(() => meymuInner.classList.remove('flip-spin'), 800);
-  }
-});
-
-/* ⏳ 倒计时逻辑 (目标设定为艺俊生日，例如每年9月19日) */
-function updateCountdown() {
-  const now = new Date();
-  let targetYear = now.getFullYear();
-  let targetDate = new Date(targetYear, 8, 19, 0, 0, 0); // 9月19日 (月份从0开始算，8代表9月)
-  if (now > targetDate) {
-    targetDate = new Date(targetYear + 1, 8, 19, 0, 0, 0);
-  }
-  const diff = targetDate - now;
-  
-  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-  const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
-  const mins = Math.floor((diff / 1000 / 60) % 60);
-  const secs = Math.floor((diff / 1000) % 60);
-
-  document.getElementById('days').textContent = String(days).padStart(2, '0');
-  document.getElementById('hours').textContent = String(hours).padStart(2, '0');
-  document.getElementById('mins').textContent = String(mins).padStart(2, '0');
-  document.getElementById('secs').textContent = String(secs).padStart(2, '0');
-}
-setInterval(updateCountdown, 1000);
-updateCountdown();
-
-/* 🍾 漂流瓶弹窗 */
+// 🍾 漂流瓶游走
 const bottle = document.getElementById('bottle');
-bottle.addEventListener('click', () => {
-  if (CORK_URL) {
-    const a = new Audio(CORK_URL); a.play().catch(()=>{});
-  }
-  document.getElementById('nameModal').classList.add('open');
-});
+function floatBottle() {
+  if (!bottle) return;
+  const nextX = 10 + Math.random() * 70;
+  const nextY = 30 + Math.random() * 45;
+  
+  bottle.style.left = nextX + '%';
+  bottle.style.top = nextY + '%';
+  
+  setTimeout(floatBottle, 8000);
+}
+floatBottle();
 
-function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+if (bottle) {
+  bottle.addEventListener('click', (e) => {
+    e.stopPropagation();
+    openModal('nameModal');
+  });
+}
 
-/* 🎫 生成船票 */
-document.getElementById('genBtn').addEventListener('click', () => {
-  const name = document.getElementById('nameInput').value.trim() || "PLLI";
-  document.getElementById('pName').textContent = name.toUpperCase();
-  document.getElementById('stubPName').textContent = name.toUpperCase();
-  closeModal('nameModal');
-  document.getElementById('ticketModal').classList.add('open');
-});
+function openModal(id) {
+  const modal = document.getElementById(id);
+  if (modal) modal.classList.add('open');
+}
 
-/* 📸 下载船票 */
-document.getElementById('downloadBtn').addEventListener('click', async () => {
-  const card = document.getElementById('ticketCard');
-  const canvas = await html2canvas(card, { scale: 2, backgroundColor: '#FAF4E8', useCORS: true });
-  const a = document.createElement('a');
-  a.download = `Yejun_Birthday_Cafe_Ticket.png`;
-  a.href = canvas.toDataURL();
-  a.click();
-});
+function closeModal(id) { 
+  const modal = document.getElementById(id);
+  if (modal) modal.classList.remove('open'); 
+}
+
+// 🎫 生成船票
+const genBtn = document.getElementById('genBtn');
+if (genBtn) {
+  genBtn.addEventListener('click', () => {
+    const input = document.getElementById('nameInput');
+    const name = (input && input.value.trim()) ? input.value.trim() : "PLLI";
+    
+    const pName = document.getElementById('pName');
+    const stubPName = document.getElementById('stubPName');
+    if (pName) pName.textContent = name.toUpperCase();
+    if (stubPName) stubPName.textContent = name.toUpperCase();
+    
+    closeModal('nameModal');
+    openModal('ticketModal');
+  });
+}
+
+// 📸 船票下载
+const downloadBtn = document.getElementById('downloadBtn');
+if (downloadBtn) {
+  downloadBtn.addEventListener('click', async () => {
+    const card = document.getElementById('ticketCard');
+    if (typeof html2canvas !== 'undefined' && card) {
+      try {
+        const canvas = await html2canvas(card, {
+          scale: 3, backgroundColor: '#FAF4E8', useCORS: true, allowTaint: true, logging: false
+        });
+        const a = document.createElement('a');
+        a.download = `Whisper_from_the_Deep_Blue_Ticket.png`;
+        a.href = canvas.toDataURL('image/png');
+        a.click();
+      } catch (err) {
+        alert("下载失败，请检查图片路径！");
+      }
+    }
+  });
+}
 </script>
 </body>
 </html>
