@@ -109,6 +109,7 @@ html, body {
   background: linear-gradient(180deg, #FFFFFF 30%, var(--gold-bright) 100%);
   -webkit-background-clip: text; background-clip: text; color: transparent;
   text-shadow: 0 4px 20px rgba(0,0,0,0.4);
+  -webkit-font-smoothing: antialiased;
 }
 .subtitle { font-size: 12px; color: rgba(255,255,255,0.85); font-weight: 300; }
 
@@ -246,6 +247,31 @@ html, body {
 .social-row { display: flex; gap: 8px; margin-top: 10px; }
 .btn-outline { background: rgba(255,255,255,0.08); color: #fff; border: 1px solid rgba(255,255,255,0.25); text-decoration: none; font-size: 11px; }
 
+/* ⚓ 底部版权/署名样式 */
+.footer {
+  position: relative;
+  z-index: 10;
+  text-align: center;
+  padding: 15px 20px 25px;
+}
+.footer-text {
+  display: inline-block;
+  font-size: 12px;
+  letter-spacing: 1.5px;
+  color: rgba(255, 255, 255, 0.75);
+  background: var(--glass-bg);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid var(--glass-border);
+  padding: 6px 18px;
+  border-radius: 20px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+.footer-text strong {
+  color: var(--gold-bright);
+  font-weight: 600;
+}
+
 /* 📱 移动端适配 */
 @media (max-width: 600px) {
   .audio-panel { top: 12px; right: 12px; padding: 6px 10px; min-width: auto; border-radius: 12px; }
@@ -262,6 +288,7 @@ html, body {
 
   .ticket { flex-direction: column; }
   .ticket-stub { width: 100%; border-left: none; border-top: 2px dashed #C5B396; }
+  .footer-text { font-size: 11px; padding: 5px 14px; }
 }
 </style>
 </head>
@@ -313,6 +340,13 @@ html, body {
       <img src="./bottle.png" class="bottle-img" alt="Drift Bottle" />
     </div>
     <div class="bottle-hint">Click the drift bottle to unlock your message 🐬</div>
+  </div>
+</div>
+
+<!-- ⚓ 网页底部署名区 -->
+<div class="footer">
+  <div class="footer-text">
+    by <strong>MYPlliDduks</strong>
   </div>
 </div>
 
