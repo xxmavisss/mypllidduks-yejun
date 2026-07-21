@@ -158,8 +158,11 @@ html, body {
 /* 🐬 海豚 */
 .dolphin-wrapper {
   position: absolute; left: 20%; top: 25%;
-  width: 240px; cursor: pointer; z-index: 20;
+  width: 200px; cursor: pointer; z-index: 20;
   transition: left 6s ease-in-out, top 6s ease-in-out, transform 0.5s ease-in-out;
+}
+.dolphin-flip {
+  width: 100%; transition: transform 0.5s ease-in-out;
 }
 .dolphin-inner {
   width: 100%; transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
@@ -185,7 +188,7 @@ html, body {
 /* 🐬 Meymu */
 .meymu-wrapper {
   position: absolute; left: 65%; top: 40%;
-  width: 200px; cursor: pointer; z-index: 20;
+  width: 240px; cursor: pointer; z-index: 20;
   transition: left 6s ease-in-out, top 6s ease-in-out, transform 0.5s ease-in-out;
 }
 .meymu-inner {
@@ -310,8 +313,8 @@ html, body {
   .nav-btn span { display: none; }
   .header { padding-top: 65px; }
   .ocean-stage { height: 50vh; min-height: 300px; }
-  .dolphin-wrapper { width: 140px; }
-  .meymu-wrapper { width: 120px; }
+  .dolphin-wrapper { width: 120px; }
+  .meymu-wrapper { width: 140px; }
   .bottle-wrapper { width: 100px; }
   .ticket { flex-direction: column; }
   .ticket-stub { width: 100%; border-left: none; border-top: 2px dashed #C5B396; }
@@ -382,8 +385,10 @@ html, body {
   <!-- 🐬 海豚 -->
   <div class="dolphin-wrapper" id="dolphin">
     <div class="speech-bubble" id="speechBubble">HAPPY YEJUN DAY! 🎂</div>
-    <div class="dolphin-inner" id="dolphinInner">
-      <img src="./dolphin.png" class="dolphin-img" alt="Dolphin" />
+    <div class="dolphin-flip" id="dolphinFlip">
+      <div class="dolphin-inner" id="dolphinInner">
+        <img src="./dolphin.png" class="dolphin-img" alt="Dolphin" />
+      </div>
     </div>
   </div>
 
@@ -643,6 +648,7 @@ if (bgmRow) {
 
 // 🐬 海豚智能游走与转向
 const dolphin = document.getElementById('dolphin');
+const dolphinFlip = document.getElementById('dolphinFlip');
 let currentDolphinX = 20;
 
 function swimDolphin() {
@@ -650,10 +656,12 @@ function swimDolphin() {
   const nextX = 5 + Math.random() * 60;
   const nextY = 10 + Math.random() * 50;
   
-  if (nextX < currentDolphinX) {
-    dolphin.style.transform = 'scaleX(-1)';
-  } else {
-    dolphin.style.transform = 'scaleX(1)';
+  if (dolphinFlip) {
+    if (nextX < currentDolphinX) {
+      dolphinFlip.style.transform = 'scaleX(-1)';
+    } else {
+      dolphinFlip.style.transform = 'scaleX(1)';
+    }
   }
   
   currentDolphinX = nextX;
