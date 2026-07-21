@@ -15,7 +15,7 @@
 <!-- 🔥 使用更稳定的 Firebase v10 模块化 CDN -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-  import { getDatabase, ref, push, onValue, remove } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+  import { getDatabase, ref, push, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
   // 1. Firebase 配置
   const firebaseConfig = {
@@ -33,29 +33,15 @@
   const db = getDatabase(app);
   const messagesRef = ref(db, 'messages');
 
-  // 🔑 管理员暗号设置
-  const ADMIN_PASSWORD = "yejun0912"; 
-  let isAdmin = false;
-
-  window.addEventListener('keydown', (e) => {
-    if (e.ctrlKey && e.shiftKey && e.key === 'A') {
-      toggleAdminMode();
-    }
-  });
-
-  function toggleAdminMode() {
-    if (!isAdmin) {
-      const pwd = prompt("🔐 请输入管理员密码/暗号以启用删除功能：");
-      if (pwd === ADMIN_PASSWORD) {
-        isAdmin = true;
-        alert("✅ 已进入管理员模式！点击留言图标即可删除。");
-      } else if (pwd !== null) {
-        alert("❌ 密码错误！");
-      }
-    } else {
-      isAdmin = false;
-      alert("🔒 已退出管理员模式。");
-    }
+  // 🌊 生成围绕四周（避开中间留言表单区）的随机坐标
+  function getEdgePosition() {
+    const zone = Math.floor(Math.random() * 4); // 0上 1下 2左 3右
+    let posX, posY;
+    if (zone === 0) { posX = 3 + Math.random() * 94; posY = 3 + Math.random() * 10; }
+    else if (zone === 1) { posX = 3 + Math.random() * 94; posY = 86 + Math.random() * 11; }
+    else if (zone === 2) { posX = 1 + Math.random() * 13; posY = 14 + Math.random() * 72; }
+    else { posX = 86 + Math.random() * 13; posY = 14 + Math.random() * 72; }
+    return { posX: Math.floor(posX), posY: Math.floor(posY) };
   }
 
   // 发送留言
@@ -78,8 +64,7 @@
       name: name,
       content: content,
       type: selectedType,
-      posX: Math.floor(5 + Math.random() * 85),
-      posY: Math.floor(15 + Math.random() * 70),
+      ...getEdgePosition(),
       timestamp: Date.now()
     }).then(() => {
       contentInput.value = '';
@@ -102,9 +87,10 @@
     Object.keys(data).forEach((key) => {
       const msg = data[key];
       
-      // 防护 1：兼容旧数据缺少坐标/类型的情况
-      const posX = (msg.posX !== undefined && msg.posX !== null) ? msg.posX : Math.floor(10 + Math.random() * 75);
-      const posY = (msg.posY !== undefined && msg.posY !== null) ? msg.posY : Math.floor(20 + Math.random() * 60);
+      // 防护 1：兼容旧数据缺少坐标/类型的情况（统一改为围绕四周分布，避开中间留言表单）
+      const fallbackPos = getEdgePosition();
+      const posX = (msg.posX !== undefined && msg.posX !== null) ? msg.posX : fallbackPos.posX;
+      const posY = (msg.posY !== undefined && msg.posY !== null) ? msg.posY : fallbackPos.posY;
       const type = msg.type || 'bottle';
 
       const item = document.createElement('div');
@@ -121,17 +107,7 @@
 
       item.addEventListener('click', (e) => {
         e.stopPropagation();
-        
-        if (isAdmin) {
-          const confirmDelete = confirm(`🔑 [管理员模式]\n\n留言内容："${msg.content}"\n来自：${msg.name}\n\n⚠️ 是否确定删掉这条留言？`);
-          if (confirmDelete) {
-            remove(ref(db, `messages/${key}`)).then(() => {
-              alert('❌ 留言已成功删除！');
-            });
-          }
-        } else {
-          alert(`💌 Message from ${msg.name}:\n\n"${msg.content}"`);
-        }
+        alert(`💌 Message from ${msg.name}:\n\n"${msg.content}"`);
       });
 
       messageOcean.appendChild(item);
