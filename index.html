@@ -35,13 +35,32 @@ html, body {
   overflow-x: hidden;
 }
 
-/* 🎥 背景视频（保证最底层 + 铺满） */
-.hero-video-bg {
-  position: fixed;
-  top: 0; left: 0; 
-  width: 100vw; height: 100vh;
-  object-fit: cover;
-  z-index: -2;
+/* 🌊 背景视频容器（确保铺满全屏并在最底层） */
+.hero-bg {
+  position: fixed; 
+  inset: 0; 
+  z-index: -10; /* 放到最底层 */
+  overflow: hidden;
+  background: #0A192F; /* 视频未加载出来时的备用底色 */
+}
+
+/* 🎥 视频标签本身的自适应样式 */
+.hero-bg video {
+  width: 100vw;
+  height: 100vh;
+  object-fit: cover; /* 保证视频铺满不拉伸 */
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+/* 🌟 给视频覆盖一层极薄的暗色遮罩（防止背景太亮导致白色文字看不清） */
+.hero-bg::after {
+  content: ''; 
+  position: absolute; 
+  inset: 0;
+  background: rgba(10, 25, 47, 0.35); /* 数字 0.35 可以调整暗度，越小视频越亮 */
+  pointer-events: none;
 }
 
 /* 浅色半透明遮罩 */
