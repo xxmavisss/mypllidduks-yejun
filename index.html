@@ -241,7 +241,7 @@ html, body {
   background: linear-gradient(180deg, #FFFFFF 30%, var(--gold-bright) 100%);
   -webkit-background-clip: text; background-clip: text; color: transparent;
   text-shadow: 0 4px 20px rgba(0,0,0,0.4);
-  pointer-events: auto; cursor: default;
+  pointer-events: none; cursor: default;
 }
 .subtitle { font-size: 12px; color: rgba(255,255,255,0.85); font-weight: 300; }
 
@@ -345,6 +345,12 @@ html, body {
 .message-view-container {
   position: relative; z-index: 20; max-width: 520px; margin: 0 auto;
   padding: 80px 20px 40px; text-align: center;
+  pointer-events: none; /* 标题/副标题/空白处不拦截点击，让背后的漂流瓶/水母能被点到 */
+}
+.message-view-container > .btn,
+.message-view-container > .message-form-card,
+.message-view-container > .reopen-form-btn {
+  pointer-events: auto; /* 只有真正需要交互的按钮/表单卡片才接收点击 */
 }
 .message-form-card {
   position: relative; /* 为了让 X 按钮能定位到右上角 */
