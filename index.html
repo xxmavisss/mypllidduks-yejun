@@ -637,18 +637,47 @@ html, body {
 .rhythm-poster .poster-sub { font-size: 11px; color: rgba(255,255,255,0.75); margin-bottom: 14px; }
 .rhythm-poster .poster-vinyl {
   width: 130px; height: 130px; border-radius: 50%; margin: 0 auto 14px;
-  background: radial-gradient(circle at center, #1A1008 0%, #1A1008 18%, #2E2418 19%, #0A0705 60%, #000 61%);
-  border: 3px solid var(--gold-accent); position: relative;
-  animation: vinylSpin 6s linear infinite;
+  background: #111;
+  border: 3px solid var(--gold-accent); 
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.6);
+  /* 🌟 确保旋转动画正常生效 */
+  animation: vinylSpin 4s linear infinite;
+  transform: translateZ(0);
 }
-.rhythm-poster .poster-vinyl::after {
-  content: ''; position: absolute; inset: 0; margin: auto; width: 14px; height: 14px;
-  border-radius: 50%; background: var(--gold-bright);
-}
-@keyframes vinylSpin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-.rhythm-poster .poster-name { font-size: 13px; font-weight: 700; color: #fff; }
-.rhythm-poster .poster-date { font-size: 10px; color: rgba(255,255,255,0.6); margin-top: 2px; }
 
+/* 🌟 添加黑胶唱片光m轨道纹理 */
+.rhythm-poster .poster-vinyl .vinyl-grooves {
+  position: absolute; inset: 6px; border-radius: 50%;
+  background: repeating-radial-gradient(
+    circle at center,
+    #111,
+    #111 3px,
+    #222 4px,
+    #111 5px
+  );
+  opacity: 0.8;
+}
+
+/* 🌟 唱片中心金色标签 */
+.rhythm-poster .poster-vinyl .vinyl-center {
+  position: absolute; inset: 0; margin: auto; width: 42px; height: 42px;
+  border-radius: 50%; 
+  background: linear-gradient(135deg, var(--gold-bright), var(--gold-accent));
+  box-shadow: 0 0 0 3px #1a1008;
+}
+
+/* 中心小圆孔 */
+.rhythm-poster .poster-vinyl .vinyl-center::after {
+  content: ''; position: absolute; inset: 0; margin: auto; width: 8px; height: 8px;
+  border-radius: 50%; background: #000;
+}
+
+@keyframes vinylSpin { 
+  from { transform: rotate(0deg); } 
+  to { transform: rotate(360deg); } 
+}
 
 @media (max-width: 600px) {
   .top-nav { top: 10px; left: 10px; right: 10px; }
@@ -903,22 +932,17 @@ html, body {
       </div>
 
       <!-- S 级专属海报 -->
-      <div class="rhythm-poster" id="rhythmPoster" style="display: none;">
-        <div class="poster-badge">🎻</div>
-        <h4>DEEP SEA CHIEF MUSICIAN</h4>
-        <div class="poster-sub">ASTERUM CRUISE · Rhythm Ocean Beat</div>
-        <div class="poster-vinyl"></div>
-        <div class="poster-name" id="posterName">PLLI</div>
-        <div class="poster-date">S RANK · 19/09/2026</div>
-      </div>
-      <button class="btn btn-coral" id="rhythmDownloadBtn" style="display: none; margin-top: 12px;">Save / Download Poster 🖼️</button>
-
-      <div style="display:flex; gap:10px; margin-top:14px;">
-        <button class="btn btn-outline" id="rhythmRetryBtn" style="width:100%;">🔁 Play Again</button>
-        <button class="btn btn-outline" onclick="switchView('home')" style="width:100%;">🔙 Main Deck</button>
-      </div>
-    </div>
+<div class="rhythm-poster" id="rhythmPoster" style="display: none;">
+  <div class="poster-badge">🎻</div>
+  <h4>DEEP SEA CHIEF MUSICIAN</h4>
+  <div class="poster-sub">ASTERUM CRUISE · Rhythm Ocean Beat</div>
+  <div class="poster-vinyl">
+    <div class="vinyl-grooves"></div>
+    <div class="vinyl-center"></div>
   </div>
+  <div class="poster-name" id="posterName">PLLI</div>
+  <!-- 🌟 修改这里：加上 id 方便动态显示玩的时候的日期 -->
+  <div class="poster-date" id="posterDate">S RANK · 19/09/2026</div>
 </div>
 
 
@@ -1748,6 +1772,17 @@ window.switchView = function(targetView) {
       const nameFromTicket = document.getElementById('pName');
       posterNameEl.textContent = (nameFromTicket && nameFromTicket.textContent && nameFromTicket.textContent !== 'GUEST')
         ? nameFromTicket.textContent : 'PLLI';
+      
+      // 🌟 新增：获取当天的日期并格式化显示（例如 DD/MM/YYYY）
+      const now = new Date();
+      const day = String(now.getDate()).padStart(2, '0');
+      const month = String(now.getMonth() + 1).padStart(2, '0');
+      const year = now.getFullYear();
+      const posterDateEl = document.getElementById('posterDate');
+      if (posterDateEl) {
+        posterDateEl.textContent = `S RANK · ${day}/${month}/${year}`;
+      }
+
       posterEl.style.display = 'block';
       downloadPosterBtn.style.display = 'inline-flex';
     } else {
