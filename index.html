@@ -238,10 +238,6 @@ html, body {
 .title {
   font-family: 'Cinzel', serif; font-weight: 700;
   font-size: clamp(24px, 5vw, 48px); margin: 6px 0;
-  /* 🌟 改为水平(90deg)方向渐变：
-     垂直(180deg)渐变会按「元素总高度」分布颜色，手机版标题换成两行时，
-     总高度变了，每一行分到的渐变区间就跟电脑版单行时不一样，导致颜色看起来不同。
-     水平方向的渐变只跟「宽度」有关，跟换成几行无关，桌面/手机显示会一致。 */
   background: linear-gradient(90deg, #FFFFFF 30%, var(--gold-bright) 100%);
   -webkit-background-clip: text; background-clip: text; color: transparent;
   text-shadow: 0 4px 20px rgba(0,0,0,0.4);
@@ -349,15 +345,15 @@ html, body {
 .message-view-container {
   position: relative; z-index: 20; max-width: 520px; margin: 0 auto;
   padding: 80px 20px 40px; text-align: center;
-  pointer-events: none; /* 标题/副标题/空白处不拦截点击，让背后的漂流瓶/水母能被点到 */
+  pointer-events: none;
 }
 .message-view-container > .btn,
 .message-view-container > .message-form-card,
 .message-view-container > .reopen-form-btn {
-  pointer-events: auto; /* 只有真正需要交互的按钮/表单卡片才接收点击 */
+  pointer-events: auto;
 }
 .message-form-card {
-  position: relative; /* 为了让 X 按钮能定位到右上角 */
+  position: relative;
   background: var(--glass-bg); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
   border: 1px solid var(--glass-border); border-radius: 24px;
   padding: 24px 20px; margin-top: 20px; box-shadow: 0 20px 50px rgba(0,0,0,0.5);
@@ -392,7 +388,6 @@ html, body {
 }
 .msg-textarea::placeholder { color: rgba(255,255,255,0.5); }
 
-/* 🌟 新增：留言板关闭按钮样式 */
 .form-close-btn {
   position: absolute;
   top: 14px;
@@ -409,20 +404,18 @@ html, body {
   color: var(--gold-bright);
 }
 
-/* 🌟 新增：重新打开留言板的悬浮按钮 */
 .reopen-form-btn {
   position: fixed;
   bottom: 30px;
   left: 50%;
   transform: translateX(-50%);
   z-index: 50;
-  display: none; /* 默认隐藏 */
+  display: none;
   box-shadow: 0 10px 25px rgba(0,0,0,0.5);
   width: auto;
   padding: 10px 24px;
 }
 
-/* 🌊 留言板海域（放置放飞的留言） */
 #messageOcean {
   position: fixed; inset: 0; pointer-events: none; z-index: 15; overflow: hidden;
 }
@@ -560,7 +553,6 @@ html, body {
 .rhythm-song-option .song-title { font-size: 13px; font-weight: 600; color: #fff; }
 .rhythm-song-option .song-sub { font-size: 10.5px; color: rgba(255,255,255,0.55); }
 
-
 .rhythm-hud {
   display: flex; justify-content: space-between; align-items: center;
   margin-bottom: 10px; font-size: 12px; color: #fff;
@@ -642,12 +634,10 @@ html, body {
   position: relative;
   overflow: hidden;
   box-shadow: 0 8px 20px rgba(0,0,0,0.6);
-  /* 🌟 确保旋转动画正常生效 */
   animation: vinylSpin 4s linear infinite;
   transform: translateZ(0);
 }
 
-/* 🌟 添加黑胶唱片光m轨道纹理 */
 .rhythm-poster .poster-vinyl .vinyl-grooves {
   position: absolute; inset: 6px; border-radius: 50%;
   background: repeating-radial-gradient(
@@ -660,7 +650,6 @@ html, body {
   opacity: 0.8;
 }
 
-/* 🌟 唱片中心金色标签 */
 .rhythm-poster .poster-vinyl .vinyl-center {
   position: absolute; inset: 0; margin: auto; width: 42px; height: 42px;
   border-radius: 50%; 
@@ -668,7 +657,6 @@ html, body {
   box-shadow: 0 0 0 3px #1a1008;
 }
 
-/* 中心小圆孔 */
 .rhythm-poster .poster-vinyl .vinyl-center::after {
   content: ''; position: absolute; inset: 0; margin: auto; width: 8px; height: 8px;
   border-radius: 50%; background: #000;
@@ -688,7 +676,6 @@ html, body {
   .meymu-wrapper { width: 100px; }
   .bottle-wrapper { width: 80px; }
   
-  /* 🌟 优化手机端留言板的上边距和组件尺寸 */
   .message-view-container {
     padding: 70px 15px 40px; 
   }
@@ -832,9 +819,7 @@ html, body {
     <h2 class="title" style="font-size: 28px; margin: 0;">Ocean of Blessings</h2>
     <div class="subtitle">Choose your ocean companion and send your wishes into the deep blue.💙</div>
 
-    <!-- 给卡片加上 id 方便 JS 控制 -->
     <div class="message-form-card" id="msgFormCard">
-      <!-- 🌟 新增：关闭按钮 -->
       <button class="form-close-btn" onclick="toggleMsgForm('hide')">✕</button>
 
       <div class="avatar-selection">
@@ -861,7 +846,6 @@ html, body {
       <button class="btn btn-coral" onclick="releaseMessage()">Release to the Ocean 🌊</button>
     </div>
 
-    <!-- 🌟 新增：重新打开留言板的悬浮按钮 (默认隐藏) -->
     <button class="btn btn-primary reopen-form-btn" id="reopenFormBtn" onclick="toggleMsgForm('show')">
       ✍️ Write a Message
     </button>
@@ -932,19 +916,26 @@ html, body {
       </div>
 
       <!-- S 级专属海报 -->
-<div class="rhythm-poster" id="rhythmPoster" style="display: none;">
-  <div class="poster-badge">🎻</div>
-  <h4>DEEP SEA CHIEF MUSICIAN</h4>
-  <div class="poster-sub">ASTERUM CRUISE · Rhythm Ocean Beat</div>
-  <div class="poster-vinyl">
-    <div class="vinyl-grooves"></div>
-    <div class="vinyl-center"></div>
-  </div>
-  <div class="poster-name" id="posterName">PLLI</div>
-  <!-- 🌟 修改这里：加上 id 方便动态显示玩的时候的日期 -->
-  <div class="poster-date" id="posterDate">S RANK · 19/09/2026</div>
-</div>
+      <div class="rhythm-poster" id="rhythmPoster" style="display: none;">
+        <div class="poster-badge">🎻</div>
+        <h4>DEEP SEA CHIEF MUSICIAN</h4>
+        <div class="poster-sub">ASTERUM CRUISE · Rhythm Ocean Beat</div>
+        <div class="poster-vinyl">
+          <div class="vinyl-grooves"></div>
+          <div class="vinyl-center"></div>
+        </div>
+        <div class="poster-name" id="posterName">PLLI</div>
+        <div class="poster-date" id="posterDate">S RANK · 19/09/2026</div>
+      </div>
 
+      <div style="display: flex; gap: 10px; margin-top: 16px;">
+        <button class="btn btn-outline" id="rhythmRetryBtn" style="flex:1;">🔄 Play Again</button>
+        <button class="btn btn-primary" id="rhythmDownloadBtn" style="flex:1; display:none;">📥 Save Poster</button>
+      </div>
+    </div>
+
+  </div>
+</div>
 
 <!-- ⚓ 网页底部署名区 -->
 <div class="footer">
@@ -1027,15 +1018,9 @@ html, body {
 </div>
 
 <script>
-// 常规 UI 逻辑
 const BGM_URL = "./yejuncoverbgm.mp3"; 
 const PASSENGER_PHOTO_URL = "./plli.jpg"; 
 
-// 🌟 用不阻塞的 toast 提示取代 alert()
-// 原因：原生 alert() 是同步阻塞整个页面的对话框，手机浏览器（尤其 iOS Safari）
-// 在 alert 弹出时会连带把正在播放的背景 <video> 暂停，关闭 alert 后视频常常
-// 卡住/不会自动恢复播放，这正是「放完漂流瓶背景 mp4 就卡住」的原因。
-// toast 不会阻塞主线程，也不会打断视频播放。
 (function () {
   const style = document.createElement('style');
   style.textContent = `
@@ -1074,8 +1059,6 @@ const PASSENGER_PHOTO_URL = "./plli.jpg";
 const pImg = document.getElementById('passengerImg');
 if (pImg) pImg.src = PASSENGER_PHOTO_URL;
 
-// 🌟 背景视频防卡住兜底：如果视频因任何原因（切后台、系统中断等）被暂停，
-// 页面重新可见或用户有交互时自动尝试恢复播放
 const bgVideo = document.getElementById('bgVideo');
 function resumeBgVideo() {
   if (bgVideo && bgVideo.paused) {
@@ -1087,7 +1070,6 @@ document.addEventListener('visibilitychange', () => {
 });
 document.addEventListener('click', resumeBgVideo, { passive: true });
 
-// ✨ 鼠标跟随星光尾迹
 const canvas = document.getElementById('trailCanvas');
 const ctx = canvas.getContext('2d');
 let particles = [];
@@ -1148,7 +1130,6 @@ function animateParticles() {
 }
 animateParticles();
 
-// ⏳ 倒计时逻辑
 const TARGET_BIRTHDAY = new Date('2026-09-11T23:00:00+08:00').getTime();
 const TARGET_EVENT = new Date('2026-09-19T11:00:00+08:00').getTime();
 let currentTarget = TARGET_BIRTHDAY;
@@ -1193,7 +1174,6 @@ function updateTimer() {
 setInterval(updateTimer, 1000);
 updateTimer();
 
-// 🌊 海浪与音乐
 const wavesAudio = document.getElementById('wavesAudio');
 let wavesStarted = false;
 function startWaves() {
@@ -1227,7 +1207,6 @@ if (bgmRow) {
   });
 }
 
-// 🐬 海豚、Meymu、漂流瓶游走
 const dolphin = document.getElementById('dolphin');
 const dolphinFlip = document.getElementById('dolphinFlip');
 let currentDolphinX = 20;
@@ -1337,22 +1316,16 @@ if (downloadBtn) {
     const card = document.getElementById('ticketCard');
     if (!card) return;
 
-    // 🌟 CDN 没加载成功时给出明确提示，而不是静默无反应
     if (typeof html2canvas === 'undefined') {
       (window.showToast || alert)('图片生成组件加载失败，请检查网络后重新整理页面再试一次。');
       return;
     }
 
-    // 🌟 立即给出视觉反馈，避免用户以为卡住了
     downloadBtn.disabled = true;
     downloadBtn.style.opacity = '0.6';
     downloadBtn.textContent = 'Generating... ⏳';
 
     try {
-      // 🌟 scale 从 3 降到 2：清晰度足够用，渲染时间明显更短
-      // 🌟 去掉 allowTaint：跟 useCORS 同时开启是互相矛盾的组合，
-      //    在部分手机浏览器（尤其 iOS Safari）上会让 canvas 被判定为「已污染」，
-      //    进而在 toDataURL() 那一步直接报错，导致「下载不到」
       const canvas = await html2canvas(card, {
         scale: 2, backgroundColor: '#FAF4E8', useCORS: true, logging: false, imageTimeout: 8000
       });
@@ -1371,7 +1344,6 @@ if (downloadBtn) {
   });
 }
 
-// 🌟 新增：控制留言表单显示与隐藏
 window.toggleMsgForm = function(action) {
   const formCard = document.getElementById('msgFormCard');
   const reopenBtn = document.getElementById('reopenFormBtn');
@@ -1396,7 +1368,6 @@ window.switchView = function(targetView) {
 
   if (targetView === 'message') {
     messageView.style.display = 'block';
-    // 切换到留言板时确保表单是打开的
     if (typeof window.toggleMsgForm === 'function') {
         window.toggleMsgForm('show');
     }
@@ -1406,18 +1377,14 @@ window.switchView = function(targetView) {
     homeView.style.display = 'block';
   }
 
-  // 🌟 离开节奏游戏页面时，停止游戏引擎并释放游戏专用音频，避免多个音频同时播放
   if (targetView !== 'rhythm' && typeof window.stopRhythmGame === 'function') {
     window.stopRhythmGame();
   }
 };
 
-// =====================================================
-// 🎵 Rhythm Ocean Beat 节奏小游戏引擎（已修改为播放整首歌）
-// =====================================================
 (function () {
-  const LEAD_TIME = 2.3;      // 音符从顶部落到判定线所需秒数（拉长=更多反应时间）
-  const HIT_WINDOW = 0.24;    // 命中判定窗口（秒），前后各半（放宽=更好接）
+  const LEAD_TIME = 2.3;
+  const HIT_WINDOW = 0.24;
   const LANES = 4;
   const NOTE_TYPES = ['note-normal', 'note-bottle', 'note-star'];
 
@@ -1473,16 +1440,15 @@ window.switchView = function(targetView) {
   let gameActive = false;
   let score = 0, combo = 0, maxCombo = 0, hits = 0, life = 5;
   let wasWavesPlaying = false, wasBgmPlaying = false;
-  let currentSongDuration = 180; // 默认时长
+  let currentSongDuration = 180;
 
   function laneRect(laneIndex) {
     return laneEls[laneIndex].getBoundingClientRect();
   }
 
-  // 🌟 自动分析整首歌波形生成完整谱面
   async function buildChart(duration, songUrl) {
     const clipDuration = duration || 180;
-    currentSongDuration = clipDuration; // 记录整首歌的真实时长
+    currentSongDuration = clipDuration;
     try {
       const res = await fetch(songUrl);
       const buf = await res.arrayBuffer();
@@ -1689,7 +1655,6 @@ window.switchView = function(targetView) {
       if (timeLeft < -HIT_WINDOW) missNote(note);
     }
 
-    // 🌟 当音频自然播放结束，或播放进度到达整首歌结尾时结束游戏
     if (rhythmAudio.ended || t >= currentSongDuration - 0.5) { 
       endGame(); 
       return; 
@@ -1773,7 +1738,6 @@ window.switchView = function(targetView) {
       posterNameEl.textContent = (nameFromTicket && nameFromTicket.textContent && nameFromTicket.textContent !== 'GUEST')
         ? nameFromTicket.textContent : 'PLLI';
       
-      // 🌟 新增：获取当天的日期并格式化显示（例如 DD/MM/YYYY）
       const now = new Date();
       const day = String(now.getDate()).padStart(2, '0');
       const month = String(now.getMonth() + 1).padStart(2, '0');
@@ -1851,7 +1815,6 @@ window.switchView = function(targetView) {
     });
   }
 })();
-
 </script>
 </body>
 </html>
