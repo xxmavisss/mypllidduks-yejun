@@ -56,7 +56,7 @@
     const selectedType = avatarTypeEl ? avatarTypeEl.value : 'bottle';
 
     if (!content) {
-      alert("Please enter a birthday wish for Yejun! 💙");
+      (window.showToast || alert)("Please enter a birthday wish for Yejun! 💙");
       return;
     }
 
@@ -68,7 +68,7 @@
       timestamp: Date.now()
     }).then(() => {
       contentInput.value = '';
-      alert('Your wish has been released to the ocean! 🌊💙');
+      (window.showToast || alert)('Your wish has been released to the ocean! 🌊💙');
       
       // 🌟 新增：发送成功后自动隐藏表单，方便查看海面
       if (typeof window.toggleMsgForm === 'function') {
@@ -77,7 +77,7 @@
       
     }).catch((err) => {
       console.error(err);
-      alert('发送失败，请检查网络或 Firebase 配置！');
+      (window.showToast || alert)('发送失败，请检查网络或 Firebase 配置！');
     });
   };
 
@@ -113,7 +113,7 @@
 
       item.addEventListener('click', (e) => {
         e.stopPropagation();
-        alert(`💌 Message from ${msg.name}:\n\n"${msg.content}"`);
+        (window.showToast || alert)(`💌 ${msg.name}: "${msg.content}"`, 4500);
       });
 
       messageOcean.appendChild(item);
@@ -238,7 +238,11 @@ html, body {
 .title {
   font-family: 'Cinzel', serif; font-weight: 700;
   font-size: clamp(24px, 5vw, 48px); margin: 6px 0;
-  background: linear-gradient(180deg, #FFFFFF 30%, var(--gold-bright) 100%);
+  /* 🌟 改为水平(90deg)方向渐变：
+     垂直(180deg)渐变会按「元素总高度」分布颜色，手机版标题换成两行时，
+     总高度变了，每一行分到的渐变区间就跟电脑版单行时不一样，导致颜色看起来不同。
+     水平方向的渐变只跟「宽度」有关，跟换成几行无关，桌面/手机显示会一致。 */
+  background: linear-gradient(90deg, #FFFFFF 30%, var(--gold-bright) 100%);
   -webkit-background-clip: text; background-clip: text; color: transparent;
   text-shadow: 0 4px 20px rgba(0,0,0,0.4);
   pointer-events: none; cursor: default;
@@ -570,7 +574,7 @@ html, body {
 
 <!-- 🎥 背景视频 -->
 <div class="hero-bg">
-  <video autoplay loop muted playsinline>
+  <video id="bgVideo" autoplay loop muted playsinline>
     <source src="./bgvideo.mp4" type="video/mp4">
   </video>
 </div>
@@ -791,8 +795,61 @@ html, body {
 const BGM_URL = "./yejuncoverbgm.mp3"; 
 const PASSENGER_PHOTO_URL = "./plli.jpg"; 
 
+// 🌟 用不阻塞的 toast 提示取代 alert()
+// 原因：原生 alert() 是同步阻塞整个页面的对话框，手机浏览器（尤其 iOS Safari）
+// 在 alert 弹出时会连带把正在播放的背景 <video> 暂停，关闭 alert 后视频常常
+// 卡住/不会自动恢复播放，这正是「放完漂流瓶背景 mp4 就卡住」的原因。
+// toast 不会阻塞主线程，也不会打断视频播放。
+(function () {
+  const style = document.createElement('style');
+  style.textContent = `
+    #appToastWrap {
+      position: fixed; left: 50%; bottom: 32px; transform: translateX(-50%);
+      z-index: 9999; display: flex; flex-direction: column; gap: 8px;
+      align-items: center; pointer-events: none; width: 100%; padding: 0 16px;
+    }
+    .app-toast {
+      background: rgba(10, 25, 47, 0.92); color: #fff; font-size: 13px; line-height: 1.4;
+      padding: 12px 18px; border-radius: 12px; max-width: 380px; text-align: center;
+      border: 1px solid rgba(255,255,255,0.15); box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+      opacity: 0; transform: translateY(10px); transition: opacity 0.25s ease, transform 0.25s ease;
+    }
+    .app-toast.show { opacity: 1; transform: translateY(0); }
+  `;
+  document.head.appendChild(style);
+
+  const wrap = document.createElement('div');
+  wrap.id = 'appToastWrap';
+  document.body.appendChild(wrap);
+
+  window.showToast = function (message, duration = 3000) {
+    const toast = document.createElement('div');
+    toast.className = 'app-toast';
+    toast.textContent = message;
+    wrap.appendChild(toast);
+    requestAnimationFrame(() => toast.classList.add('show'));
+    setTimeout(() => {
+      toast.classList.remove('show');
+      setTimeout(() => toast.remove(), 300);
+    }, duration);
+  };
+})();
+
 const pImg = document.getElementById('passengerImg');
 if (pImg) pImg.src = PASSENGER_PHOTO_URL;
+
+// 🌟 背景视频防卡住兜底：如果视频因任何原因（切后台、系统中断等）被暂停，
+// 页面重新可见或用户有交互时自动尝试恢复播放
+const bgVideo = document.getElementById('bgVideo');
+function resumeBgVideo() {
+  if (bgVideo && bgVideo.paused) {
+    bgVideo.play().catch(() => {});
+  }
+}
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible') resumeBgVideo();
+});
+document.addEventListener('click', resumeBgVideo, { passive: true });
 
 // ✨ 鼠标跟随星光尾迹
 const canvas = document.getElementById('trailCanvas');
@@ -924,7 +981,7 @@ if (bgmRow) {
         bgmRow.classList.add('playing');
         if (bgmSub) bgmSub.textContent = "Playing...";
       }).catch(err => {
-        alert("提示：未找到音频文件 yejuncoverbgm.mp3！");
+        (window.showToast || alert)("提示：未找到音频文件 yejuncoverbgm.mp3！");
       });
     } else {
       bgmAudio.pause();
@@ -1046,7 +1103,7 @@ if (downloadBtn) {
 
     // 🌟 CDN 没加载成功时给出明确提示，而不是静默无反应
     if (typeof html2canvas === 'undefined') {
-      alert('图片生成组件加载失败，请检查网络后重新整理页面再试一次。');
+      (window.showToast || alert)('图片生成组件加载失败，请检查网络后重新整理页面再试一次。');
       return;
     }
 
@@ -1069,7 +1126,7 @@ if (downloadBtn) {
       a.click();
     } catch (err) {
       console.error('Ticket download failed:', err);
-      alert('下载失败，请检查图片路径！');
+      (window.showToast || alert)('下载失败，请检查图片路径！');
     } finally {
       downloadBtn.disabled = false;
       downloadBtn.style.opacity = '1';
