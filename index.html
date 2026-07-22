@@ -1457,7 +1457,10 @@ window.switchView = function(targetView) {
   }
 
   // 🌟 根据歌曲波形自动生成谱面（能量突增 = 一个音符），失败时退化成固定间隔谱面
+  const PLAY_DURATION = 55; // 🌟 只玩歌曲的前 55 秒，不用整首歌打完
+
   async function buildChart(duration, songUrl) {
+    const clipDuration = Math.min(duration || 90, PLAY_DURATION);
     try {
       const res = await fetch(songUrl);
       const buf = await res.arrayBuffer();
@@ -1468,39 +1471,73 @@ window.switchView = function(targetView) {
         ? averageChannels(audioBuffer)
         : audioBuffer.getChannelData(0);
       const sr = audioBuffer.sampleRate;
-      const frameSize = Math.floor(sr * 0.05); // 50ms 一帧
+      const frameSec = 0.05; // 50ms 一帧
+      const frameSize = Math.floor(sr * frameSec);
+      // 只分析要玩的这段（前 PLAY_DURATION 秒），扒谱更快也更准
+      const clipSamples = Math.min(data.length, Math.floor(clipDuration * sr));
       const frames = [];
-      for (let i = 0; i < data.length; i += frameSize) {
+      for (let i = 0; i < clipSamples; i += frameSize) {
         let sum = 0;
-        for (let j = i; j < Math.min(i + frameSize, data.length); j++) sum += data[j] * data[j];
+        for (let j = i; j < Math.min(i + frameSize, clipSamples); j++) sum += data[j] * data[j];
         frames.push(Math.sqrt(sum / frameSize));
       }
-      // 能量突增（flux）峰值检测
+      // 能量突增（flux）—— 灵敏度提高：阈值更低、间隔更短，抓更多真实的鼓点/重音
       const flux = frames.map((v, i) => Math.max(0, v - (frames[i - 1] || 0)));
       const mean = flux.reduce((a, b) => a + b, 0) / flux.length;
-      const threshold = mean * 2.3;
-      const minGapFrames = Math.round(0.5 / 0.05); // 至少间隔 500ms，避免过密
-      const onsets = [];
+      const threshold = mean * 1.15;
+      const minGapFrames = Math.round(0.22 / frameSec); // 至少间隔 220ms
+
+      // 🌟 第一步：先抓出所有候选重音点（灵敏度更高）
+      const rawOnsets = [];
       let lastPeak = -minGapFrames;
       for (let i = 1; i < flux.length - 1; i++) {
         if (flux[i] > threshold && flux[i] >= flux[i - 1] && flux[i] >= flux[i + 1] && (i - lastPeak) >= minGapFrames) {
-          onsets.push(i * 0.05);
+          rawOnsets.push(i);
           lastPeak = i;
         }
       }
+      if (rawOnsets.length < 6) throw new Error('too few onsets, fallback');
+
+      // 🌟 第二步：从候选重音点的间隔里，估算这首歌真正的"拍子间隔"（BPM），
+      // 让掉落的音符卡在稳定的节拍网格上，而不是零散不规律的位置——
+      // 这样下落速度才会跟音乐的节拍对上，而不是看起来对不上拍。
+      const gaps = [];
+      for (let i = 1; i < rawOnsets.length; i++) gaps.push((rawOnsets[i] - rawOnsets[i - 1]) * frameSec);
+      const beatInterval = estimateBeatInterval(gaps); // 秒
+      const firstBeatTime = (rawOnsets[0] * frameSec);
+
+      // 🌟 第三步：以估算出的节拍间隔，铺出一整段稳定的节拍网格
+      const notes = [];
+      let t = firstBeatTime;
+      let idx = 0;
+      while (t < clipDuration - 1.2) {
+        notes.push({
+          time: t + 0.6, // 留一点前奏反应时间
+          lane: idx % LANES,
+          type: NOTE_TYPES[idx % NOTE_TYPES.length],
+        });
+        idx++;
+        t += beatInterval;
+      }
       actx.close();
-      if (onsets.length < 10) throw new Error('too few onsets, fallback');
-      // 🌟 再抽稀一半，避免自动检测出来的谱面还是太密
-      const thinned = onsets.filter((_, i) => i % 2 === 0);
-      return thinned.map((t, idx) => ({
-        time: t + 0.6, // 留一点前奏时间
-        lane: idx % LANES,
-        type: NOTE_TYPES[idx % NOTE_TYPES.length],
-      }));
+      if (notes.length < 6) throw new Error('grid too sparse, fallback');
+      return notes;
     } catch (err) {
       console.warn('自动扒谱失败，使用固定间隔谱面兜底：', err);
-      return buildFallbackChart(duration || 90);
+      return buildFallbackChart(clipDuration);
     }
+  }
+
+  // 根据检测到的重音间隔，估算最常见/最稳定的节拍间隔（简易众数聚类）
+  function estimateBeatInterval(gaps) {
+    const MIN_BEAT = 0.32, MAX_BEAT = 0.95; // 对应约 63~190 BPM 的合理范围
+    const valid = gaps.filter(g => g >= MIN_BEAT && g <= MAX_BEAT);
+    const pool = valid.length >= 4 ? valid : gaps;
+    if (!pool.length) return 0.5;
+    const sorted = [...pool].sort((a, b) => a - b);
+    // 取中位数，比平均数更抗极端值干扰，更能代表"典型拍距"
+    const mid = Math.floor(sorted.length / 2);
+    return sorted.length % 2 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
   }
 
   function averageChannels(audioBuffer) {
@@ -1517,10 +1554,10 @@ window.switchView = function(targetView) {
     const notes = [];
     let t = 2.5;
     let lane = 0;
-    while (t < duration - 2) {
+    while (t < duration - 1.2) {
       notes.push({ time: t, lane, type: NOTE_TYPES[lane % NOTE_TYPES.length] });
       lane = (lane + 1 + Math.floor(Math.random() * 2)) % LANES;
-      t += 0.9 + Math.random() * 0.35;
+      t += 0.6;
     }
     return notes;
   }
@@ -1608,7 +1645,7 @@ window.switchView = function(targetView) {
       if (timeLeft < -HIT_WINDOW) missNote(note);
     }
 
-    if (rhythmAudio.ended) { endGame(); return; }
+    if (rhythmAudio.ended || t >= PLAY_DURATION) { endGame(); return; }
     rafId = requestAnimationFrame(gameLoop);
   }
 
