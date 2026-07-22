@@ -1459,6 +1459,7 @@ window.switchView = function(targetView) {
   // 🌟 根据歌曲波形自动生成谱面（能量突增 = 一个音符），失败时退化成固定间隔谱面
   const PLAY_DURATION = 55; // 🌟 只玩歌曲的前 55 秒，不用整首歌打完
 
+// 🌟 升级版：复合节拍对齐 + 智能音色随机化生成谱面
   async function buildChart(duration, songUrl) {
     const clipDuration = Math.min(duration || 90, PLAY_DURATION);
     try {
@@ -1471,31 +1472,31 @@ window.switchView = function(targetView) {
         ? averageChannels(audioBuffer)
         : audioBuffer.getChannelData(0);
       const sr = audioBuffer.sampleRate;
-      const frameSec = 0.05; // 50ms 一帧
+      const frameSec = 0.04; // 更细腻的分析帧率 (40ms)
       const frameSize = Math.floor(sr * frameSec);
-      // 只分析要玩的这段（前 PLAY_DURATION 秒），扒谱更快也更准
       const clipSamples = Math.min(data.length, Math.floor(clipDuration * sr));
+      
       const frames = [];
-      const brightness = []; // 🌟 每一帧的"高频占比"，用来让轨道分配跟着音色走，而不是固定轮转
+      const brightness = []; 
       for (let i = 0; i < clipSamples; i += frameSize) {
         let sum = 0, hfSum = 0;
         const end = Math.min(i + frameSize, clipSamples);
         for (let j = i; j < end; j++) {
           sum += data[j] * data[j];
-          const diff = j > i ? (data[j] - data[j - 1]) : 0; // 一阶差分≈粗略高通，代表更"亮"的音色
+          const diff = j > i ? (data[j] - data[j - 1]) : 0;
           hfSum += diff * diff;
         }
         const energy = Math.sqrt(sum / frameSize);
         frames.push(energy);
         brightness.push(energy > 0 ? Math.sqrt(hfSum / frameSize) / (energy + 1e-6) : 0);
       }
-      // 能量突增（flux）—— 灵敏度提高：阈值更低、间隔更短，抓更多真实的鼓点/重音
+
+      // 动态计算能量变化突增（Flux）
       const flux = frames.map((v, i) => Math.max(0, v - (frames[i - 1] || 0)));
       const mean = flux.reduce((a, b) => a + b, 0) / flux.length;
-      const threshold = mean * 1.15;
-      const minGapFrames = Math.round(0.22 / frameSec); // 至少间隔 220ms
+      const threshold = mean * 1.1;
+      const minGapFrames = Math.round(0.2 / frameSec);
 
-      // 🌟 第一步：先抓出所有候选重音点（灵敏度更高）
       const rawOnsets = [];
       let lastPeak = -minGapFrames;
       for (let i = 1; i < flux.length - 1; i++) {
@@ -1506,38 +1507,36 @@ window.switchView = function(targetView) {
       }
       if (rawOnsets.length < 6) throw new Error('too few onsets, fallback');
 
-      // 🌟 第二步：从候选重音点的间隔里，估算这首歌真正的"拍子间隔"（BPM），
-      // 让掉落的音符卡在稳定的节拍网格上，而不是零散不规律的位置——
-      // 这样下落速度才会跟音乐的节拍对上，而不是看起来对不上拍。
       const gaps = [];
       for (let i = 1; i < rawOnsets.length; i++) gaps.push((rawOnsets[i] - rawOnsets[i - 1]) * frameSec);
-      const beatInterval = estimateBeatInterval(gaps); // 秒
+      const beatInterval = estimateBeatInterval(gaps);
       const firstBeatTime = (rawOnsets[0] * frameSec);
 
-      // 🌟 第三步：以估算出的节拍间隔，铺出一整段稳定的节拍网格；
-      // 轨道不再是固定的 D→F→J→K 轮转，而是用「这一拍的音色亮度」分桶决定轨道，
-      // 不同歌曲、同一首歌不同段落，音色高低起伏不同，轨道模式自然会不一样。
+      // 🌟 核心改进：结合“音色特征桶”与“伪随机扰动”，确保每首歌节奏贴合拍子但轨道完全随机多变
       const notes = [];
       let t = firstBeatTime;
       let idx = 0;
-      let prevLane = -1, repeatCount = 0;
+      let lastLane = -1;
+      
       while (t < clipDuration - 1.2) {
         const frameIdx = Math.min(brightness.length - 1, Math.round(t / frameSec));
         const b = brightness[frameIdx] || 0;
-        // 把亮度值分到 4 个桶里，桶的边界按这首歌整体亮度范围动态定（而不是写死的数字）
-        let lane = brightnessToLane(b, brightness);
-        // 连续 3 次以上落在同一轨道就强制错开，避免看起来又变成单调轮转
-        if (lane === prevLane) {
-          repeatCount++;
-          if (repeatCount >= 2) { lane = (lane + 1 + Math.floor(Math.random() * 2)) % LANES; repeatCount = 0; }
-        } else {
-          repeatCount = 0;
+        
+        // 基础轨道由音色高低决定，再加上随机偏移量，实现“节拍统一、轨道Random”
+        let baseLane = brightnessToLane(b, brightness);
+        let randomOffset = Math.floor(Math.random() * (LANES - 1)) + 1;
+        let lane = (baseLane + randomOffset) % LANES;
+        
+        // 避免同一轨道连续出现超过 2 次
+        if (lane === lastLane) {
+          lane = (lane + 1 + Math.floor(Math.random() * (LANES - 1))) % LANES;
         }
-        prevLane = lane;
+        lastLane = lane;
+
         notes.push({
-          time: t + 0.6, // 留一点前奏反应时间
+          time: t + 0.6,
           lane,
-          type: NOTE_TYPES[idx % NOTE_TYPES.length],
+          type: NOTE_TYPES[Math.floor(Math.random() * NOTE_TYPES.length)], // 音符外观样式也随机化
         });
         idx++;
         t += beatInterval;
@@ -1546,7 +1545,7 @@ window.switchView = function(targetView) {
       if (notes.length < 6) throw new Error('grid too sparse, fallback');
       return notes;
     } catch (err) {
-      console.warn('自动扒谱失败，使用固定间隔谱面兜底：', err);
+      console.warn('自动扒谱降级处理：', err);
       return buildFallbackChart(clipDuration);
     }
   }
