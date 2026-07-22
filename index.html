@@ -1460,8 +1460,8 @@ window.switchView = function(targetView) {
   const PLAY_DURATION = 55; // 🌟 只玩歌曲的前 55 秒，不用整首歌打完
 
 // 🌟 升级版：复合节拍对齐 + 智能音色随机化生成谱面
-  async function buildChart(duration, songUrl) {
-    const clipDuration = Math.min(duration || 90, PLAY_DURATION);
+async function buildChart(duration, songUrl) {
+    const clipDuration = duration || 180;
     try {
       const res = await fetch(songUrl);
       const buf = await res.arrayBuffer();
