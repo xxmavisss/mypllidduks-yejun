@@ -524,7 +524,132 @@ html, body {
   color: var(--gold-bright); font-weight: 600; text-decoration: underline; text-underline-offset: 3px;
 }
 
-/* 📱 移动端适配 */
+/* 🎵 Rhythm Ocean Beat 节奏小游戏 */
+.rhythm-container {
+  max-width: 480px; margin: 0 auto; padding: 80px 16px 40px; text-align: center;
+  position: relative; z-index: 20;
+}
+.rhythm-intro {
+  background: var(--glass-bg); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--glass-border); border-radius: 20px; padding: 26px 20px;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.4);
+}
+.rhythm-intro h3 { font-family: 'Cinzel', serif; color: var(--gold-bright); font-size: 20px; margin-bottom: 10px; }
+.rhythm-intro p { font-size: 12.5px; color: rgba(255,255,255,0.8); line-height: 1.6; margin-bottom: 6px; }
+.rhythm-key-hint {
+  display: flex; justify-content: center; gap: 8px; margin: 16px 0;
+}
+.rhythm-key-hint span {
+  width: 34px; height: 34px; border-radius: 8px; background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.25); display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 700; color: #fff;
+}
+
+.rhythm-song-list { display: flex; flex-direction: column; gap: 8px; }
+.rhythm-song-option {
+  display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 12px;
+  background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15);
+  cursor: pointer; transition: all 0.2s ease; text-align: left;
+}
+.rhythm-song-option:hover { background: rgba(255,255,255,0.1); }
+.rhythm-song-option.selected {
+  border-color: var(--gold-bright); background: rgba(226,185,111,0.12);
+  box-shadow: 0 0 0 1px var(--gold-bright) inset;
+}
+.rhythm-song-option .song-icon { font-size: 18px; }
+.rhythm-song-option .song-title { font-size: 13px; font-weight: 600; color: #fff; }
+.rhythm-song-option .song-sub { font-size: 10.5px; color: rgba(255,255,255,0.55); }
+
+
+.rhythm-hud {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 10px; font-size: 12px; color: #fff;
+}
+.rhythm-hud .combo { font-family: 'Cinzel', serif; color: var(--gold-bright); font-weight: 700; font-size: 16px; }
+.rhythm-hearts { display: flex; gap: 3px; font-size: 14px; }
+.rhythm-hearts .dead { opacity: 0.25; }
+
+.rhythm-stage {
+  position: relative; width: 100%; height: 46vh; min-height: 320px; max-height: 480px;
+  background: linear-gradient(180deg, rgba(6,20,36,0.55), rgba(6,20,36,0.85));
+  border: 1px solid var(--glass-border); border-radius: 16px; overflow: hidden;
+  display: flex;
+}
+.rhythm-lane {
+  position: relative; flex: 1; height: 100%; border-left: 1px solid rgba(255,255,255,0.06);
+}
+.rhythm-lane:first-child { border-left: none; }
+.rhythm-hit-line {
+  position: absolute; left: 0; right: 0; bottom: 54px; height: 3px;
+  background: var(--gold-bright); box-shadow: 0 0 10px var(--gold-bright);
+}
+.rhythm-note {
+  position: absolute; left: 6px; right: 6px; height: 22px; border-radius: 8px;
+  background: linear-gradient(135deg, #6FD6E0, #2E8FA6); box-shadow: 0 0 10px rgba(111,214,224,0.7);
+  transition: opacity 0.15s ease;
+}
+.rhythm-note.note-bottle { background: linear-gradient(135deg, #9B8CFF, #5A4FCF); }
+.rhythm-note.note-star { background: linear-gradient(135deg, var(--gold-bright), var(--gold-accent)); }
+.rhythm-note.judged { opacity: 0; }
+.rhythm-lane.flash { background: rgba(255,255,255,0.08); }
+
+.rhythm-touch-row {
+  display: flex; gap: 8px; margin-top: 10px;
+}
+.rhythm-touch-btn {
+  flex: 1; padding: 14px 0; border-radius: 12px; border: 1px solid rgba(255,255,255,0.25);
+  background: rgba(255,255,255,0.08); color: #fff; font-weight: 700; font-size: 13px; cursor: pointer;
+  user-select: none; -webkit-user-select: none;
+}
+.rhythm-touch-btn:active { background: rgba(255,255,255,0.25); }
+
+.rhythm-judge-text {
+  position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%);
+  font-family: 'Cinzel', serif; font-weight: 700; font-size: 20px; color: var(--gold-bright);
+  text-shadow: 0 2px 10px rgba(0,0,0,0.6); opacity: 0; pointer-events: none; z-index: 5;
+}
+.rhythm-judge-text.show { animation: judgePop 0.5s ease forwards; }
+@keyframes judgePop {
+  0% { opacity: 0; transform: translate(-50%, -30%) scale(0.7); }
+  25% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }
+  100% { opacity: 0; transform: translate(-50%, -60%) scale(1); }
+}
+
+.rhythm-result-card {
+  margin-top: 16px; padding: 20px; border-radius: 18px;
+  background: var(--glass-bg); backdrop-filter: blur(16px); border: 1px solid var(--glass-border);
+}
+.rhythm-rank {
+  font-family: 'Cinzel', serif; font-size: 56px; font-weight: 800; color: var(--gold-bright);
+  text-shadow: 0 4px 20px rgba(226,185,111,0.5); line-height: 1;
+}
+.rhythm-poster {
+  width: 100%; max-width: 320px; margin: 16px auto 0; border-radius: 16px; overflow: hidden;
+  background: linear-gradient(160deg, #0A192F, #16344B 60%, #0A192F);
+  border: 1px solid rgba(226,185,111,0.4); padding: 26px 18px; text-align: center;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+}
+.rhythm-poster .poster-badge { font-size: 34px; }
+.rhythm-poster h4 {
+  font-family: 'Cinzel', serif; color: var(--gold-bright); font-size: 16px; margin: 10px 0 4px;
+  letter-spacing: 1px;
+}
+.rhythm-poster .poster-sub { font-size: 11px; color: rgba(255,255,255,0.75); margin-bottom: 14px; }
+.rhythm-poster .poster-vinyl {
+  width: 130px; height: 130px; border-radius: 50%; margin: 0 auto 14px;
+  background: radial-gradient(circle at center, #1A1008 0%, #1A1008 18%, #2E2418 19%, #0A0705 60%, #000 61%);
+  border: 3px solid var(--gold-accent); position: relative;
+  animation: vinylSpin 6s linear infinite;
+}
+.rhythm-poster .poster-vinyl::after {
+  content: ''; position: absolute; inset: 0; margin: auto; width: 14px; height: 14px;
+  border-radius: 50%; background: var(--gold-bright);
+}
+@keyframes vinylSpin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+.rhythm-poster .poster-name { font-size: 13px; font-weight: 700; color: #fff; }
+.rhythm-poster .poster-date { font-size: 10px; color: rgba(255,255,255,0.6); margin-top: 2px; }
+
+
 @media (max-width: 600px) {
   .top-nav { top: 10px; left: 10px; right: 10px; }
   .nav-btn span { display: none; }
@@ -564,6 +689,10 @@ html, body {
 
   .ticket { flex-direction: column; }
   .ticket-stub { width: 100%; border-left: none; border-top: 2px dashed #C5B396; }
+
+  .rhythm-container { padding: 70px 12px 30px; }
+  .rhythm-stage { height: 42vh; min-height: 260px; }
+  .rhythm-touch-btn { padding: 16px 0; font-size: 15px; }
 }
 </style>
 </head>
@@ -584,6 +713,9 @@ html, body {
   <div class="nav-actions">
     <button class="nav-btn btn-highlight" onclick="switchView('message')">
       ✉️ <span>Leave a Message for Yejun</span>
+    </button>
+    <button class="nav-btn" onclick="switchView('rhythm')">
+      🎵 <span>Rhythm Ocean Beat</span>
     </button>
   </div>
 
@@ -707,6 +839,86 @@ html, body {
   </div>
 
   <div id="messageOcean"></div>
+</div>
+
+
+<!-- =================================================== -->
+<!-- 🎵 视图 3：Rhythm Ocean Beat 节奏小游戏 -->
+<!-- =================================================== -->
+<div id="rhythmView" style="display: none;">
+  <div class="rhythm-container">
+    <button class="btn btn-outline" onclick="switchView('home')" style="width: auto; padding: 6px 18px; margin-bottom: 10px;">
+      🔙 Back to Main Deck
+    </button>
+    <h2 class="title" style="font-size: clamp(20px, 6vw, 32px);">Rhythm Ocean Beat 🎵</h2>
+    <div class="subtitle" style="margin-bottom: 14px;">Catch the beat as it drifts down to the deep blue 🌊</div>
+
+    <!-- 开始前的说明卡 -->
+    <div class="rhythm-intro" id="rhythmIntro">
+      <h3>🎧 How to Play</h3>
+      <p>Pick a song, then hit the falling notes right as they cross the gold line.</p>
+      <p>Desktop: press <b>D F J K</b>. Mobile: tap the 4 buttons below the lanes.</p>
+      <div class="rhythm-key-hint">
+        <span>D</span><span>F</span><span>J</span><span>K</span>
+      </div>
+
+      <div style="margin-top: 16px; text-align: left;">
+        <div style="font-size:12px; color:rgba(255,255,255,0.7); margin-bottom:8px; text-align:center;">🎶 Choose a song</div>
+        <div class="rhythm-song-list" id="rhythmSongList"></div>
+      </div>
+
+      <p style="font-size:11px; opacity:0.65; margin-top:10px;">⚠️ Notes are auto-generated from the song's beat — timing may not be frame-perfect, but it's fun to try! 😉</p>
+      <button class="btn btn-primary" id="rhythmStartBtn" style="margin-top: 14px;">▶️ Start Game</button>
+    </div>
+
+    <!-- 游戏进行中 -->
+    <div id="rhythmPlayArea" style="display: none;">
+      <div class="rhythm-hud">
+        <div>Score: <span id="rhythmScore">0</span></div>
+        <div class="combo" id="rhythmCombo"></div>
+        <div class="rhythm-hearts" id="rhythmHearts">❤️❤️❤️❤️❤️</div>
+      </div>
+      <div class="rhythm-stage" id="rhythmStage">
+        <div class="rhythm-lane" data-lane="0"></div>
+        <div class="rhythm-lane" data-lane="1"></div>
+        <div class="rhythm-lane" data-lane="2"></div>
+        <div class="rhythm-lane" data-lane="3"></div>
+        <div class="rhythm-hit-line"></div>
+        <div class="rhythm-judge-text" id="rhythmJudgeText"></div>
+      </div>
+      <div class="rhythm-touch-row">
+        <button class="rhythm-touch-btn" data-lane="0">D</button>
+        <button class="rhythm-touch-btn" data-lane="1">F</button>
+        <button class="rhythm-touch-btn" data-lane="2">J</button>
+        <button class="rhythm-touch-btn" data-lane="3">K</button>
+      </div>
+    </div>
+
+    <!-- 结算画面 -->
+    <div class="rhythm-result-card" id="rhythmResult" style="display: none;">
+      <div style="font-size:12px; letter-spacing:2px; color:rgba(255,255,255,0.7);">RESULT</div>
+      <div class="rhythm-rank" id="rhythmRank">B</div>
+      <div style="font-size:13px; margin-top:8px; color:#fff;">
+        Score <b id="rhythmFinalScore">0</b> · Accuracy <b id="rhythmAccuracy">0%</b> · Max Combo <b id="rhythmMaxCombo">0</b>
+      </div>
+
+      <!-- S 级专属海报 -->
+      <div class="rhythm-poster" id="rhythmPoster" style="display: none;">
+        <div class="poster-badge">🎻</div>
+        <h4>DEEP SEA CHIEF MUSICIAN</h4>
+        <div class="poster-sub">ASTERUM CRUISE · Rhythm Ocean Beat</div>
+        <div class="poster-vinyl"></div>
+        <div class="poster-name" id="posterName">PLLI</div>
+        <div class="poster-date">S RANK · 19/09/2026</div>
+      </div>
+      <button class="btn btn-coral" id="rhythmDownloadBtn" style="display: none; margin-top: 12px;">Save / Download Poster 🖼️</button>
+
+      <div style="display:flex; gap:10px; margin-top:14px;">
+        <button class="btn btn-outline" id="rhythmRetryBtn" style="width:100%;">🔁 Play Again</button>
+        <button class="btn btn-outline" onclick="switchView('home')" style="width:100%;">🔙 Main Deck</button>
+      </div>
+    </div>
+  </div>
 </div>
 
 
@@ -1152,18 +1364,401 @@ window.toggleMsgForm = function(action) {
 window.switchView = function(targetView) {
   const homeView = document.getElementById('homeView');
   const messageView = document.getElementById('messageView');
+  const rhythmView = document.getElementById('rhythmView');
+
+  homeView.style.display = 'none';
+  messageView.style.display = 'none';
+  rhythmView.style.display = 'none';
+
   if (targetView === 'message') {
-    homeView.style.display = 'none';
     messageView.style.display = 'block';
     // 切换到留言板时确保表单是打开的
     if (typeof window.toggleMsgForm === 'function') {
         window.toggleMsgForm('show');
     }
+  } else if (targetView === 'rhythm') {
+    rhythmView.style.display = 'block';
   } else {
-    messageView.style.display = 'none';
     homeView.style.display = 'block';
   }
+
+  // 🌟 离开节奏游戏页面时，停止游戏引擎并释放游戏专用音频，避免多个音频同时播放
+  if (targetView !== 'rhythm' && typeof window.stopRhythmGame === 'function') {
+    window.stopRhythmGame();
+  }
 };
+
+// =====================================================
+// 🎵 Rhythm Ocean Beat 节奏小游戏引擎
+// =====================================================
+(function () {
+  const LEAD_TIME = 1.8;      // 音符从顶部落到判定线所需秒数
+  const HIT_WINDOW = 0.16;    // 命中判定窗口（秒），前后各半
+  const LANES = 4;
+  const NOTE_TYPES = ['note-normal', 'note-bottle', 'note-star'];
+
+  const introEl = document.getElementById('rhythmIntro');
+  const playAreaEl = document.getElementById('rhythmPlayArea');
+  const resultEl = document.getElementById('rhythmResult');
+  const stageEl = document.getElementById('rhythmStage');
+  const laneEls = stageEl ? Array.from(stageEl.querySelectorAll('.rhythm-lane')) : [];
+  const scoreEl = document.getElementById('rhythmScore');
+  const comboEl = document.getElementById('rhythmCombo');
+  const heartsEl = document.getElementById('rhythmHearts');
+  const judgeTextEl = document.getElementById('rhythmJudgeText');
+  const startBtn = document.getElementById('rhythmStartBtn');
+  const retryBtn = document.getElementById('rhythmRetryBtn');
+  const rankEl = document.getElementById('rhythmRank');
+  const finalScoreEl = document.getElementById('rhythmFinalScore');
+  const accuracyEl = document.getElementById('rhythmAccuracy');
+  const maxComboEl = document.getElementById('rhythmMaxCombo');
+  const posterEl = document.getElementById('rhythmPoster');
+  const posterNameEl = document.getElementById('posterName');
+  const downloadPosterBtn = document.getElementById('rhythmDownloadBtn');
+
+  if (!stageEl) return; // 页面上没有这个游戏就不初始化
+
+  // 🌟 歌曲列表：要加/换歌，只需要在这里加一行 {title, sub, file}，
+  // 并把对应的音频文件放到跟 index.html 同一个文件夹底下即可
+  const RHYTHM_SONGS = [
+    { title: "Summer (원곡 : Paul Blanco Feat. BE'O)", sub: "Cover by Yejun 예준", file: "./song1.mp3" },
+    { title: "난춘 (亂春) (원곡 : 새소년)", sub: "Cover by Yejun 예준", file: "./song2.mp3" },
+    { title: "好きすぎて滅！(Sukisugite METSU!) (원곡 : M!LK)", sub: "Cover by PLAVE 플레이브", file: "./song3.mp3" },
+  ];
+  let selectedSongIndex = 0;
+
+  const songListEl = document.getElementById('rhythmSongList');
+  function renderSongList() {
+    if (!songListEl) return;
+    songListEl.innerHTML = '';
+    RHYTHM_SONGS.forEach((song, idx) => {
+      const opt = document.createElement('div');
+      opt.className = 'rhythm-song-option' + (idx === selectedSongIndex ? ' selected' : '');
+      opt.innerHTML = `<div class="song-icon">${idx === selectedSongIndex ? '🎵' : '🎧'}</div>
+        <div><div class="song-title">${song.title}</div><div class="song-sub">${song.sub}</div></div>`;
+      opt.addEventListener('click', () => {
+        selectedSongIndex = idx;
+        renderSongList();
+      });
+      songListEl.appendChild(opt);
+    });
+  }
+  renderSongList();
+
+  let rhythmAudio = null;
+  let chart = [];          // [{time, lane, type, spawned, judged, el}]
+  let rafId = null;
+  let gameActive = false;
+  let score = 0, combo = 0, maxCombo = 0, hits = 0, life = 5;
+  let wasWavesPlaying = false, wasBgmPlaying = false;
+
+  function laneRect(laneIndex) {
+    return laneEls[laneIndex].getBoundingClientRect();
+  }
+
+  // 🌟 根据歌曲波形自动生成谱面（能量突增 = 一个音符），失败时退化成固定间隔谱面
+  async function buildChart(duration, songUrl) {
+    try {
+      const res = await fetch(songUrl);
+      const buf = await res.arrayBuffer();
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      const actx = new AudioCtx();
+      const audioBuffer = await actx.decodeAudioData(buf);
+      const data = audioBuffer.numberOfChannels > 1
+        ? averageChannels(audioBuffer)
+        : audioBuffer.getChannelData(0);
+      const sr = audioBuffer.sampleRate;
+      const frameSize = Math.floor(sr * 0.05); // 50ms 一帧
+      const frames = [];
+      for (let i = 0; i < data.length; i += frameSize) {
+        let sum = 0;
+        for (let j = i; j < Math.min(i + frameSize, data.length); j++) sum += data[j] * data[j];
+        frames.push(Math.sqrt(sum / frameSize));
+      }
+      // 能量突增（flux）峰值检测
+      const flux = frames.map((v, i) => Math.max(0, v - (frames[i - 1] || 0)));
+      const mean = flux.reduce((a, b) => a + b, 0) / flux.length;
+      const threshold = mean * 1.6;
+      const minGapFrames = Math.round(0.28 / 0.05); // 至少间隔 280ms
+      const onsets = [];
+      let lastPeak = -minGapFrames;
+      for (let i = 1; i < flux.length - 1; i++) {
+        if (flux[i] > threshold && flux[i] >= flux[i - 1] && flux[i] >= flux[i + 1] && (i - lastPeak) >= minGapFrames) {
+          onsets.push(i * 0.05);
+          lastPeak = i;
+        }
+      }
+      actx.close();
+      if (onsets.length < 10) throw new Error('too few onsets, fallback');
+      return onsets.map((t, idx) => ({
+        time: t + 0.4, // 留一点前奏时间
+        lane: idx % LANES,
+        type: NOTE_TYPES[idx % NOTE_TYPES.length],
+      }));
+    } catch (err) {
+      console.warn('自动扒谱失败，使用固定间隔谱面兜底：', err);
+      return buildFallbackChart(duration || 90);
+    }
+  }
+
+  function averageChannels(audioBuffer) {
+    const len = audioBuffer.length;
+    const out = new Float32Array(len);
+    for (let c = 0; c < audioBuffer.numberOfChannels; c++) {
+      const ch = audioBuffer.getChannelData(c);
+      for (let i = 0; i < len; i++) out[i] += ch[i] / audioBuffer.numberOfChannels;
+    }
+    return out;
+  }
+
+  function buildFallbackChart(duration) {
+    const notes = [];
+    let t = 2;
+    let lane = 0;
+    while (t < duration - 2) {
+      notes.push({ time: t, lane, type: NOTE_TYPES[lane % NOTE_TYPES.length] });
+      lane = (lane + 1 + Math.floor(Math.random() * 2)) % LANES;
+      t += 0.55 + Math.random() * 0.25;
+    }
+    return notes;
+  }
+
+  function resetHud() {
+    score = 0; combo = 0; maxCombo = 0; hits = 0; life = 5;
+    scoreEl.textContent = '0';
+    comboEl.textContent = '';
+    heartsEl.textContent = '❤️'.repeat(life);
+  }
+
+  function updateHud() {
+    scoreEl.textContent = String(score);
+    comboEl.textContent = combo > 1 ? combo + ' Combo!' : '';
+    heartsEl.textContent = '❤️'.repeat(Math.max(0, life));
+  }
+
+  function showJudge(text) {
+    judgeTextEl.textContent = text;
+    judgeTextEl.classList.remove('show');
+    void judgeTextEl.offsetWidth; // 触发重绘以重播动画
+    judgeTextEl.classList.add('show');
+  }
+
+  function flashLane(laneIndex) {
+    const laneEl = laneEls[laneIndex];
+    laneEl.classList.add('flash');
+    setTimeout(() => laneEl.classList.remove('flash'), 120);
+  }
+
+  function spawnNoteEl(note) {
+    const el = document.createElement('div');
+    el.className = 'rhythm-note ' + note.type;
+    laneEls[note.lane].appendChild(el);
+    note.el = el;
+    note.spawned = true;
+  }
+
+  function judgeHit(laneIndex) {
+    if (!gameActive || !rhythmAudio) return;
+    const t = rhythmAudio.currentTime;
+    // 找该轨道内，时间最接近且还没判定、在命中窗口内的音符
+    let candidate = null;
+    for (const note of chart) {
+      if (note.lane !== laneIndex || note.judged) continue;
+      if (Math.abs(note.time - t) <= HIT_WINDOW) {
+        if (!candidate || Math.abs(note.time - t) < Math.abs(candidate.time - t)) candidate = note;
+      }
+    }
+    flashLane(laneIndex);
+    if (candidate) {
+      candidate.judged = true;
+      if (candidate.el) candidate.el.classList.add('judged');
+      hits++; combo++; maxCombo = Math.max(maxCombo, combo);
+      score += 100 + Math.min(combo, 30) * 3;
+      showJudge(combo >= 15 ? 'PERFECT!' : 'HIT!');
+      updateHud();
+    }
+  }
+
+  function missNote(note) {
+    note.judged = true;
+    if (note.el) note.el.classList.add('judged');
+    combo = 0; life--;
+    showJudge('MISS');
+    updateHud();
+    if (life <= 0) endGame();
+  }
+
+  function gameLoop() {
+    if (!gameActive || !rhythmAudio) return;
+    const t = rhythmAudio.currentTime;
+    const stageH = stageEl.clientHeight;
+    const hitLineY = stageH - 54;
+
+    for (const note of chart) {
+      if (note.judged) continue;
+      const timeLeft = note.time - t;
+      if (!note.spawned && timeLeft <= LEAD_TIME) spawnNoteEl(note);
+      if (note.spawned) {
+        const progress = 1 - timeLeft / LEAD_TIME;
+        const y = Math.max(-30, progress * hitLineY);
+        note.el.style.top = y + 'px';
+      }
+      if (timeLeft < -HIT_WINDOW) missNote(note);
+    }
+
+    if (rhythmAudio.ended) { endGame(); return; }
+    rafId = requestAnimationFrame(gameLoop);
+  }
+
+  function clearNotesFromDom() {
+    laneEls.forEach(l => { l.querySelectorAll('.rhythm-note').forEach(n => n.remove()); });
+  }
+
+  async function startGame() {
+    introEl.style.display = 'none';
+    resultEl.style.display = 'none';
+    playAreaEl.style.display = 'block';
+    startBtn.disabled = true;
+    startBtn.textContent = 'Loading beatmap... 🎼';
+
+    // 暂停主页背景音乐/海浪声，避免和游戏音乐叠在一起
+    if (typeof wavesAudio !== 'undefined' && wavesAudio) {
+      wasWavesPlaying = !wavesAudio.paused;
+      wavesAudio.pause();
+    }
+    if (typeof bgmAudio !== 'undefined' && bgmAudio) {
+      wasBgmPlaying = !bgmAudio.paused;
+      bgmAudio.pause();
+    }
+
+    const songUrl = RHYTHM_SONGS[selectedSongIndex].file;
+    rhythmAudio = new Audio(songUrl);
+    rhythmAudio.volume = 0.9;
+
+    const duration = await new Promise((resolve) => {
+      rhythmAudio.addEventListener('loadedmetadata', () => resolve(rhythmAudio.duration || 90));
+      rhythmAudio.addEventListener('error', () => resolve(90));
+      setTimeout(() => resolve(90), 4000);
+    });
+
+    chart = await buildChart(duration, songUrl);
+    resetHud();
+    clearNotesFromDom();
+
+    startBtn.disabled = false;
+    startBtn.textContent = '▶️ Start Game';
+
+    gameActive = true;
+    try {
+      await rhythmAudio.play();
+    } catch (err) {
+      (window.showToast || alert)('音频播放失败，请检查网络或音频文件！');
+      gameActive = false;
+      playAreaEl.style.display = 'none';
+      introEl.style.display = 'block';
+      return;
+    }
+    rafId = requestAnimationFrame(gameLoop);
+  }
+
+  function endGame() {
+    if (!gameActive) return;
+    gameActive = false;
+    if (rafId) cancelAnimationFrame(rafId);
+    if (rhythmAudio) rhythmAudio.pause();
+
+    playAreaEl.style.display = 'none';
+    resultEl.style.display = 'block';
+
+    const total = chart.length || 1;
+    const accuracy = Math.round((hits / total) * 100);
+    let rank = 'C';
+    if (accuracy >= 95) rank = 'S';
+    else if (accuracy >= 85) rank = 'A';
+    else if (accuracy >= 70) rank = 'B';
+
+    rankEl.textContent = rank;
+    finalScoreEl.textContent = String(score);
+    accuracyEl.textContent = accuracy + '%';
+    maxComboEl.textContent = String(maxCombo);
+
+    if (rank === 'S') {
+      const nameFromTicket = document.getElementById('pName');
+      posterNameEl.textContent = (nameFromTicket && nameFromTicket.textContent && nameFromTicket.textContent !== 'GUEST')
+        ? nameFromTicket.textContent : 'PLLI';
+      posterEl.style.display = 'block';
+      downloadPosterBtn.style.display = 'inline-flex';
+    } else {
+      posterEl.style.display = 'none';
+      downloadPosterBtn.style.display = 'none';
+    }
+
+    // 恢复主页音乐播放状态
+    if (typeof wavesAudio !== 'undefined' && wavesAudio && wasWavesPlaying) wavesAudio.play().catch(() => {});
+    if (typeof bgmAudio !== 'undefined' && bgmAudio && wasBgmPlaying) bgmAudio.play().catch(() => {});
+  }
+
+  window.stopRhythmGame = function () {
+    if (rafId) cancelAnimationFrame(rafId);
+    gameActive = false;
+    if (rhythmAudio) { rhythmAudio.pause(); rhythmAudio = null; }
+    clearNotesFromDom();
+    playAreaEl.style.display = 'none';
+    resultEl.style.display = 'none';
+    introEl.style.display = 'block';
+    if (typeof wavesAudio !== 'undefined' && wavesAudio && wasWavesPlaying) wavesAudio.play().catch(() => {});
+    if (typeof bgmAudio !== 'undefined' && bgmAudio && wasBgmPlaying) bgmAudio.play().catch(() => {});
+  };
+
+  if (startBtn) startBtn.addEventListener('click', startGame);
+  if (retryBtn) retryBtn.addEventListener('click', startGame);
+
+  // 键盘输入：D F J K
+  const KEY_LANE_MAP = { d: 0, f: 1, j: 2, k: 3 };
+  window.addEventListener('keydown', (e) => {
+    if (!gameActive) return;
+    const lane = KEY_LANE_MAP[e.key.toLowerCase()];
+    if (lane !== undefined) judgeHit(lane);
+  });
+
+  // 手机点击按钮
+  document.querySelectorAll('.rhythm-touch-btn').forEach((btn) => {
+    btn.addEventListener('touchstart', (e) => {
+      e.preventDefault();
+      judgeHit(Number(btn.dataset.lane));
+    }, { passive: false });
+    btn.addEventListener('click', () => judgeHit(Number(btn.dataset.lane)));
+  });
+
+  // 下载 S 级海报
+  if (downloadPosterBtn) {
+    const originalText = downloadPosterBtn.textContent;
+    downloadPosterBtn.addEventListener('click', async () => {
+      if (typeof html2canvas === 'undefined') {
+        (window.showToast || alert)('图片生成组件加载失败，请检查网络后重新整理页面再试一次。');
+        return;
+      }
+      downloadPosterBtn.disabled = true;
+      downloadPosterBtn.style.opacity = '0.6';
+      downloadPosterBtn.textContent = 'Generating... ⏳';
+      try {
+        const canvas = await html2canvas(posterEl, { scale: 2, useCORS: true, logging: false });
+        const a = document.createElement('a');
+        a.download = 'Deep_Sea_Chief_Musician.png';
+        a.href = canvas.toDataURL('image/png');
+        a.click();
+      } catch (err) {
+        console.error('Poster download failed:', err);
+        (window.showToast || alert)('下载失败，请检查图片路径！');
+      } finally {
+        downloadPosterBtn.disabled = false;
+        downloadPosterBtn.style.opacity = '1';
+        downloadPosterBtn.textContent = originalText;
+      }
+    });
+  }
+})();
+
 </script>
 </body>
 </html>
