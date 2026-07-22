@@ -1476,10 +1476,18 @@ window.switchView = function(targetView) {
       // 只分析要玩的这段（前 PLAY_DURATION 秒），扒谱更快也更准
       const clipSamples = Math.min(data.length, Math.floor(clipDuration * sr));
       const frames = [];
+      const brightness = []; // 🌟 每一帧的"高频占比"，用来让轨道分配跟着音色走，而不是固定轮转
       for (let i = 0; i < clipSamples; i += frameSize) {
-        let sum = 0;
-        for (let j = i; j < Math.min(i + frameSize, clipSamples); j++) sum += data[j] * data[j];
-        frames.push(Math.sqrt(sum / frameSize));
+        let sum = 0, hfSum = 0;
+        const end = Math.min(i + frameSize, clipSamples);
+        for (let j = i; j < end; j++) {
+          sum += data[j] * data[j];
+          const diff = j > i ? (data[j] - data[j - 1]) : 0; // 一阶差分≈粗略高通，代表更"亮"的音色
+          hfSum += diff * diff;
+        }
+        const energy = Math.sqrt(sum / frameSize);
+        frames.push(energy);
+        brightness.push(energy > 0 ? Math.sqrt(hfSum / frameSize) / (energy + 1e-6) : 0);
       }
       // 能量突增（flux）—— 灵敏度提高：阈值更低、间隔更短，抓更多真实的鼓点/重音
       const flux = frames.map((v, i) => Math.max(0, v - (frames[i - 1] || 0)));
@@ -1506,14 +1514,29 @@ window.switchView = function(targetView) {
       const beatInterval = estimateBeatInterval(gaps); // 秒
       const firstBeatTime = (rawOnsets[0] * frameSec);
 
-      // 🌟 第三步：以估算出的节拍间隔，铺出一整段稳定的节拍网格
+      // 🌟 第三步：以估算出的节拍间隔，铺出一整段稳定的节拍网格；
+      // 轨道不再是固定的 D→F→J→K 轮转，而是用「这一拍的音色亮度」分桶决定轨道，
+      // 不同歌曲、同一首歌不同段落，音色高低起伏不同，轨道模式自然会不一样。
       const notes = [];
       let t = firstBeatTime;
       let idx = 0;
+      let prevLane = -1, repeatCount = 0;
       while (t < clipDuration - 1.2) {
+        const frameIdx = Math.min(brightness.length - 1, Math.round(t / frameSec));
+        const b = brightness[frameIdx] || 0;
+        // 把亮度值分到 4 个桶里，桶的边界按这首歌整体亮度范围动态定（而不是写死的数字）
+        let lane = brightnessToLane(b, brightness);
+        // 连续 3 次以上落在同一轨道就强制错开，避免看起来又变成单调轮转
+        if (lane === prevLane) {
+          repeatCount++;
+          if (repeatCount >= 2) { lane = (lane + 1 + Math.floor(Math.random() * 2)) % LANES; repeatCount = 0; }
+        } else {
+          repeatCount = 0;
+        }
+        prevLane = lane;
         notes.push({
           time: t + 0.6, // 留一点前奏反应时间
-          lane: idx % LANES,
+          lane,
           type: NOTE_TYPES[idx % NOTE_TYPES.length],
         });
         idx++;
@@ -1526,6 +1549,17 @@ window.switchView = function(targetView) {
       console.warn('自动扒谱失败，使用固定间隔谱面兜底：', err);
       return buildFallbackChart(clipDuration);
     }
+  }
+
+  // 把某一帧的"音色亮度"映射成 0~3 号轨道（按整首歌亮度的分布动态分桶，而非固定阈值）
+  function brightnessToLane(value, allValues) {
+    const sorted = [...allValues].sort((a, b) => a - b);
+    const q = (p) => sorted[Math.min(sorted.length - 1, Math.floor(p * sorted.length))];
+    const b1 = q(0.25), b2 = q(0.5), b3 = q(0.75);
+    if (value <= b1) return 0;
+    if (value <= b2) return 1;
+    if (value <= b3) return 2;
+    return 3;
   }
 
   // 根据检测到的重音间隔，估算最常见/最稳定的节拍间隔（简易众数聚类）
