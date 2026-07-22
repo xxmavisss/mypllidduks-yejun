@@ -10,7 +10,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
 <!-- html2canvas 用于生成/下载船票图片 -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" defer></script>
 
 <!-- 🔥 使用更稳定的 Firebase v10 模块化 CDN -->
 <script type="module">
@@ -1039,20 +1039,41 @@ if (genBtn) {
 
 const downloadBtn = document.getElementById('downloadBtn');
 if (downloadBtn) {
+  const originalBtnText = downloadBtn.textContent;
   downloadBtn.addEventListener('click', async () => {
     const card = document.getElementById('ticketCard');
-    if (typeof html2canvas !== 'undefined' && card) {
-      try {
-        const canvas = await html2canvas(card, {
-          scale: 3, backgroundColor: '#FAF4E8', useCORS: true, allowTaint: true, logging: false
-        });
-        const a = document.createElement('a');
-        a.download = `Whisper_from_the_Deep_Blue_Ticket.png`;
-        a.href = canvas.toDataURL('image/png');
-        a.click();
-      } catch (err) {
-        alert("下载失败，请检查图片路径！");
-      }
+    if (!card) return;
+
+    // 🌟 CDN 没加载成功时给出明确提示，而不是静默无反应
+    if (typeof html2canvas === 'undefined') {
+      alert('图片生成组件加载失败，请检查网络后重新整理页面再试一次。');
+      return;
+    }
+
+    // 🌟 立即给出视觉反馈，避免用户以为卡住了
+    downloadBtn.disabled = true;
+    downloadBtn.style.opacity = '0.6';
+    downloadBtn.textContent = 'Generating... ⏳';
+
+    try {
+      // 🌟 scale 从 3 降到 2：清晰度足够用，渲染时间明显更短
+      // 🌟 去掉 allowTaint：跟 useCORS 同时开启是互相矛盾的组合，
+      //    在部分手机浏览器（尤其 iOS Safari）上会让 canvas 被判定为「已污染」，
+      //    进而在 toDataURL() 那一步直接报错，导致「下载不到」
+      const canvas = await html2canvas(card, {
+        scale: 2, backgroundColor: '#FAF4E8', useCORS: true, logging: false, imageTimeout: 8000
+      });
+      const a = document.createElement('a');
+      a.download = `Whisper_from_the_Deep_Blue_Ticket.png`;
+      a.href = canvas.toDataURL('image/png');
+      a.click();
+    } catch (err) {
+      console.error('Ticket download failed:', err);
+      alert('下载失败，请检查图片路径！');
+    } finally {
+      downloadBtn.disabled = false;
+      downloadBtn.style.opacity = '1';
+      downloadBtn.textContent = originalBtnText;
     }
   });
 }
