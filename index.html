@@ -1389,7 +1389,7 @@ window.switchView = function(targetView) {
 };
 
 // =====================================================
-// 🎵 Rhythm Ocean Beat 节奏小游戏引擎
+// 🎵 Rhythm Ocean Beat 节奏小游戏引擎（已修改为播放整首歌）
 // =====================================================
 (function () {
   const LEAD_TIME = 2.3;      // 音符从顶部落到判定线所需秒数（拉长=更多反应时间）
@@ -1416,10 +1416,8 @@ window.switchView = function(targetView) {
   const posterNameEl = document.getElementById('posterName');
   const downloadPosterBtn = document.getElementById('rhythmDownloadBtn');
 
-  if (!stageEl) return; // 页面上没有这个游戏就不初始化
+  if (!stageEl) return; 
 
-  // 🌟 歌曲列表：要加/换歌，只需要在这里加一行 {title, sub, file}，
-  // 并把对应的音频文件放到跟 index.html 同一个文件夹底下即可
   const RHYTHM_SONGS = [
     { title: "Summer (원곡 : Paul Blanco Feat. BE'O)", sub: "Cover by Yejun 예준", file: "./song1.mp3" },
     { title: "난춘 (亂春) (원곡 : 새소년)", sub: "Cover by Yejun 예준", file: "./song2.mp3" },
@@ -1446,22 +1444,21 @@ window.switchView = function(targetView) {
   renderSongList();
 
   let rhythmAudio = null;
-  let chart = [];          // [{time, lane, type, spawned, judged, el}]
+  let chart = [];          
   let rafId = null;
   let gameActive = false;
   let score = 0, combo = 0, maxCombo = 0, hits = 0, life = 5;
   let wasWavesPlaying = false, wasBgmPlaying = false;
+  let currentSongDuration = 180; // 默认时长
 
   function laneRect(laneIndex) {
     return laneEls[laneIndex].getBoundingClientRect();
   }
 
-  // 🌟 根据歌曲波形自动生成谱面（能量突增 = 一个音符），失败时退化成固定间隔谱面
-  const PLAY_DURATION = 55; // 🌟 只玩歌曲的前 55 秒，不用整首歌打完
-
-// 🌟 升级版：复合节拍对齐 + 智能音色随机化生成谱面
-async function buildChart(duration, songUrl) {
+  // 🌟 自动分析整首歌波形生成完整谱面
+  async function buildChart(duration, songUrl) {
     const clipDuration = duration || 180;
+    currentSongDuration = clipDuration; // 记录整首歌的真实时长
     try {
       const res = await fetch(songUrl);
       const buf = await res.arrayBuffer();
@@ -1472,7 +1469,7 @@ async function buildChart(duration, songUrl) {
         ? averageChannels(audioBuffer)
         : audioBuffer.getChannelData(0);
       const sr = audioBuffer.sampleRate;
-      const frameSec = 0.04; // 更细腻的分析帧率 (40ms)
+      const frameSec = 0.04; 
       const frameSize = Math.floor(sr * frameSec);
       const clipSamples = Math.min(data.length, Math.floor(clipDuration * sr));
       
@@ -1491,7 +1488,6 @@ async function buildChart(duration, songUrl) {
         brightness.push(energy > 0 ? Math.sqrt(hfSum / frameSize) / (energy + 1e-6) : 0);
       }
 
-      // 动态计算能量变化突增（Flux）
       const flux = frames.map((v, i) => Math.max(0, v - (frames[i - 1] || 0)));
       const mean = flux.reduce((a, b) => a + b, 0) / flux.length;
       const threshold = mean * 1.1;
@@ -1512,22 +1508,18 @@ async function buildChart(duration, songUrl) {
       const beatInterval = estimateBeatInterval(gaps);
       const firstBeatTime = (rawOnsets[0] * frameSec);
 
-      // 🌟 核心改进：结合“音色特征桶”与“伪随机扰动”，确保每首歌节奏贴合拍子但轨道完全随机多变
       const notes = [];
       let t = firstBeatTime;
-      let idx = 0;
       let lastLane = -1;
       
       while (t < clipDuration - 1.2) {
         const frameIdx = Math.min(brightness.length - 1, Math.round(t / frameSec));
         const b = brightness[frameIdx] || 0;
         
-        // 基础轨道由音色高低决定，再加上随机偏移量，实现“节拍统一、轨道Random”
         let baseLane = brightnessToLane(b, brightness);
         let randomOffset = Math.floor(Math.random() * (LANES - 1)) + 1;
         let lane = (baseLane + randomOffset) % LANES;
         
-        // 避免同一轨道连续出现超过 2 次
         if (lane === lastLane) {
           lane = (lane + 1 + Math.floor(Math.random() * (LANES - 1))) % LANES;
         }
@@ -1536,9 +1528,8 @@ async function buildChart(duration, songUrl) {
         notes.push({
           time: t + 0.6,
           lane,
-          type: NOTE_TYPES[Math.floor(Math.random() * NOTE_TYPES.length)], // 音符外观样式也随机化
+          type: NOTE_TYPES[Math.floor(Math.random() * NOTE_TYPES.length)],
         });
-        idx++;
         t += beatInterval;
       }
       actx.close();
@@ -1550,7 +1541,6 @@ async function buildChart(duration, songUrl) {
     }
   }
 
-  // 把某一帧的"音色亮度"映射成 0~3 号轨道（按整首歌亮度的分布动态分桶，而非固定阈值）
   function brightnessToLane(value, allValues) {
     const sorted = [...allValues].sort((a, b) => a - b);
     const q = (p) => sorted[Math.min(sorted.length - 1, Math.floor(p * sorted.length))];
@@ -1561,14 +1551,12 @@ async function buildChart(duration, songUrl) {
     return 3;
   }
 
-  // 根据检测到的重音间隔，估算最常见/最稳定的节拍间隔（简易众数聚类）
   function estimateBeatInterval(gaps) {
-    const MIN_BEAT = 0.32, MAX_BEAT = 0.95; // 对应约 63~190 BPM 的合理范围
+    const MIN_BEAT = 0.32, MAX_BEAT = 0.95; 
     const valid = gaps.filter(g => g >= MIN_BEAT && g <= MAX_BEAT);
     const pool = valid.length >= 4 ? valid : gaps;
     if (!pool.length) return 0.5;
     const sorted = [...pool].sort((a, b) => a - b);
-    // 取中位数，比平均数更抗极端值干扰，更能代表"典型拍距"
     const mid = Math.floor(sorted.length / 2);
     return sorted.length % 2 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
   }
@@ -1611,7 +1599,7 @@ async function buildChart(duration, songUrl) {
   function showJudge(text) {
     judgeTextEl.textContent = text;
     judgeTextEl.classList.remove('show');
-    void judgeTextEl.offsetWidth; // 触发重绘以重播动画
+    void judgeTextEl.offsetWidth; 
     judgeTextEl.classList.add('show');
   }
 
@@ -1632,7 +1620,6 @@ async function buildChart(duration, songUrl) {
   function judgeHit(laneIndex) {
     if (!gameActive || !rhythmAudio) return;
     const t = rhythmAudio.currentTime;
-    // 找该轨道内，时间最接近且还没判定、在命中窗口内的音符
     let candidate = null;
     for (const note of chart) {
       if (note.lane !== laneIndex || note.judged) continue;
@@ -1678,7 +1665,11 @@ async function buildChart(duration, songUrl) {
       if (timeLeft < -HIT_WINDOW) missNote(note);
     }
 
-    if (rhythmAudio.ended || t >= PLAY_DURATION) { endGame(); return; }
+    // 🌟 当音频自然播放结束，或播放进度到达整首歌结尾时结束游戏
+    if (rhythmAudio.ended || t >= currentSongDuration - 0.5) { 
+      endGame(); 
+      return; 
+    }
     rafId = requestAnimationFrame(gameLoop);
   }
 
@@ -1691,9 +1682,8 @@ async function buildChart(duration, songUrl) {
     resultEl.style.display = 'none';
     playAreaEl.style.display = 'block';
     startBtn.disabled = true;
-    startBtn.textContent = 'Loading beatmap... 🎼';
+    startBtn.textContent = 'Loading full song... 🎼';
 
-    // 暂停主页背景音乐/海浪声，避免和游戏音乐叠在一起
     if (typeof wavesAudio !== 'undefined' && wavesAudio) {
       wasWavesPlaying = !wavesAudio.paused;
       wavesAudio.pause();
@@ -1708,9 +1698,9 @@ async function buildChart(duration, songUrl) {
     rhythmAudio.volume = 0.9;
 
     const duration = await new Promise((resolve) => {
-      rhythmAudio.addEventListener('loadedmetadata', () => resolve(rhythmAudio.duration || 90));
-      rhythmAudio.addEventListener('error', () => resolve(90));
-      setTimeout(() => resolve(90), 4000);
+      rhythmAudio.addEventListener('loadedmetadata', () => resolve(rhythmAudio.duration || 180));
+      rhythmAudio.addEventListener('error', () => resolve(180));
+      setTimeout(() => resolve(180), 4000);
     });
 
     chart = await buildChart(duration, songUrl);
@@ -1765,7 +1755,6 @@ async function buildChart(duration, songUrl) {
       downloadPosterBtn.style.display = 'none';
     }
 
-    // 恢复主页音乐播放状态
     if (typeof wavesAudio !== 'undefined' && wavesAudio && wasWavesPlaying) wavesAudio.play().catch(() => {});
     if (typeof bgmAudio !== 'undefined' && bgmAudio && wasBgmPlaying) bgmAudio.play().catch(() => {});
   }
@@ -1785,7 +1774,6 @@ async function buildChart(duration, songUrl) {
   if (startBtn) startBtn.addEventListener('click', startGame);
   if (retryBtn) retryBtn.addEventListener('click', startGame);
 
-  // 键盘输入：D F J K
   const KEY_LANE_MAP = { d: 0, f: 1, j: 2, k: 3 };
   window.addEventListener('keydown', (e) => {
     if (!gameActive) return;
@@ -1793,7 +1781,6 @@ async function buildChart(duration, songUrl) {
     if (lane !== undefined) judgeHit(lane);
   });
 
-  // 手机点击按钮
   document.querySelectorAll('.rhythm-touch-btn').forEach((btn) => {
     btn.addEventListener('touchstart', (e) => {
       e.preventDefault();
@@ -1802,7 +1789,6 @@ async function buildChart(duration, songUrl) {
     btn.addEventListener('click', () => judgeHit(Number(btn.dataset.lane)));
   });
 
-  // 下载 S 级海报
   if (downloadPosterBtn) {
     const originalText = downloadPosterBtn.textContent;
     downloadPosterBtn.addEventListener('click', async () => {
