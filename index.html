@@ -344,7 +344,7 @@ html, body {
 /* ✉️ 留言板页面专用样式 */
 .message-view-container {
   position: relative; z-index: 20; max-width: 520px; margin: 0 auto;
-  padding: 80px 20px 40px; text-align: center;
+  padding: 80px 20px 70px; text-align: center;
   pointer-events: none;
 }
 .message-view-container > .btn,
@@ -500,8 +500,13 @@ html, body {
 .social-row { display: flex; gap: 8px; margin-top: 10px; }
 .btn-outline { background: rgba(255,255,255,0.08); color: #fff; border: 1px solid rgba(255,255,255,0.25); text-decoration: none; font-size: 11px; }
 
-/* ⚓ 底部署名 */
-.footer { position: relative; z-index: 10; text-align: center; padding: 15px 20px 25px; }
+/* ⚓ 底部署名 —— 固定在视口最下方中间，不随页面滚动/切换视图移动 */
+.footer {
+  position: fixed; left: 50%; bottom: 14px; transform: translateX(-50%);
+  z-index: 60; text-align: center; padding: 0; pointer-events: none;
+}
+.footer-text { pointer-events: auto; }
+#homeView { padding-bottom: 70px; }
 .footer-text {
   display: inline-block; font-size: 12px; letter-spacing: 1.5px;
   color: rgba(255, 255, 255, 0.75); background: var(--glass-bg);
@@ -519,7 +524,7 @@ html, body {
 
 /* 🎵 Rhythm Ocean Beat 节奏小游戏 */
 .rhythm-container {
-  max-width: 480px; margin: 0 auto; padding: 80px 16px 40px; text-align: center;
+  max-width: 480px; margin: 0 auto; padding: 80px 16px 70px; text-align: center;
   position: relative; z-index: 20;
 }
 .rhythm-intro {
@@ -559,7 +564,6 @@ html, body {
 }
 .rhythm-hud .combo { font-family: 'Cinzel', serif; color: var(--gold-bright); font-weight: 700; font-size: 16px; }
 .rhythm-hearts { display: flex; gap: 3px; font-size: 14px; }
-.rhythm-hearts .dead { opacity: 0.25; }
 
 .rhythm-stage {
   position: relative; width: 100%; height: 46vh; min-height: 320px; max-height: 480px;
@@ -677,7 +681,7 @@ html, body {
   .bottle-wrapper { width: 80px; }
   
   .message-view-container {
-    padding: 70px 15px 40px; 
+    padding: 70px 15px 70px; 
   }
   .message-form-card {
     padding: 20px 14px 16px;
@@ -706,7 +710,7 @@ html, body {
   .ticket { flex-direction: column; }
   .ticket-stub { width: 100%; border-left: none; border-top: 2px dashed #C5B396; }
 
-  .rhythm-container { padding: 70px 12px 30px; }
+  .rhythm-container { padding: 70px 12px 70px; }
   .rhythm-stage { height: 42vh; min-height: 260px; }
   .rhythm-touch-btn { padding: 16px 0; font-size: 15px; }
 }
