@@ -641,6 +641,12 @@ html, body {
   animation: vinylSpin 4s linear infinite;
   transform: translateZ(0);
 }
+.rhythm-poster .poster-vinyl::before {
+  /* 🌟 同心圆图案本身是完全对称的，就算真的在转，肉眼也看不出来——
+     加一条不对称的细高光线，转动时才能被看见 */
+  content: ''; position: absolute; top: 0; left: 50%; width: 2px; height: 50%;
+  background: rgba(255,255,255,0.35); transform-origin: bottom center; z-index: 3;
+}
 
 .rhythm-poster .poster-vinyl .vinyl-grooves {
   position: absolute; inset: 6px; border-radius: 50%;
@@ -664,6 +670,10 @@ html, body {
 .rhythm-poster .poster-vinyl .vinyl-center::after {
   content: ''; position: absolute; inset: 0; margin: auto; width: 8px; height: 8px;
   border-radius: 50%; background: #000;
+}
+.rhythm-poster .poster-vinyl .vinyl-photo {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  object-fit: cover; border-radius: 50%; z-index: 2;
 }
 
 @keyframes vinylSpin { 
@@ -924,9 +934,10 @@ html, body {
         <div class="poster-badge">🎻</div>
         <h4>DEEP SEA CHIEF MUSICIAN</h4>
         <div class="poster-sub">ASTERUM CRUISE · Rhythm Ocean Beat</div>
-        <div class="poster-vinyl">
+        <div class="poster-vinyl" id="posterVinyl">
           <div class="vinyl-grooves"></div>
           <div class="vinyl-center"></div>
+          <img src="./vinyl.png" class="vinyl-photo" alt="Vinyl" onerror="this.remove();" />
         </div>
         <div class="poster-name" id="posterName">PLLI</div>
         <div class="poster-date" id="posterDate">S RANK · 19/09/2026</div>
@@ -1365,6 +1376,7 @@ window.switchView = function(targetView) {
   const homeView = document.getElementById('homeView');
   const messageView = document.getElementById('messageView');
   const rhythmView = document.getElementById('rhythmView');
+  const footerEl = document.querySelector('.footer');
 
   homeView.style.display = 'none';
   messageView.style.display = 'none';
@@ -1380,6 +1392,9 @@ window.switchView = function(targetView) {
   } else {
     homeView.style.display = 'block';
   }
+
+  // 🌟 留言板页面不显示 by MYPlliDduks 署名，其他页面维持显示
+  if (footerEl) footerEl.style.display = (targetView === 'message') ? 'none' : '';
 
   if (targetView !== 'rhythm' && typeof window.stopRhythmGame === 'function') {
     window.stopRhythmGame();
