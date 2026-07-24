@@ -33,8 +33,10 @@
   const db = getDatabase(app);
   const messagesRef = ref(db, 'messages');
 
-  // 🌊 生成围绕四周（避开中间留言表单区）的随机坐标
-  function getEdgePosition() {
+  // 🌊 生成围绕四周（避开中间留言表单区）的随机坐标，并尽量避开已经存在的其他留言图标（防止叠在一起难点）
+  let occupiedPositions = []; // 目前海面上所有留言图标的坐标，供下一次生成新坐标时参考避开
+
+  function randomZonePos() {
     const zone = Math.floor(Math.random() * 4); // 0上 1下 2左 3右
     let posX, posY;
     if (zone === 0) { posX = 3 + Math.random() * 94; posY = 3 + Math.random() * 10; }
@@ -42,6 +44,33 @@
     else if (zone === 2) { posX = 1 + Math.random() * 13; posY = 14 + Math.random() * 72; }
     else { posX = 86 + Math.random() * 13; posY = 14 + Math.random() * 72; }
     return { posX: Math.floor(posX), posY: Math.floor(posY) };
+  }
+
+  function getEdgePosition(avoidList) {
+    const list = avoidList || occupiedPositions;
+    // 🌟 图标本身固定 65px 大小，但坐标是「宽/高各自的百分比」——
+    // 手机屏幕通常又窄又高，直接把 posX% 和 posY% 当成同一把尺子来算距离并不准，
+    // 两个图标算出来"离得够远"，实际像素上可能还是挤在一起。
+    // 改成先把百分比换算成真实像素，再用像素距离判断，才能保证视觉上真的分开。
+    const vw = window.innerWidth || 390;
+    const vh = window.innerHeight || 800;
+    const MIN_DIST_PX = 95; // 图标约 65px，留一点间隙，实际像素间距至少 95px
+    const MAX_TRIES = 60;
+    let best = null, bestMinDist = -1;
+    for (let i = 0; i < MAX_TRIES; i++) {
+      const candidate = randomZonePos();
+      if (!list.length) return candidate;
+      let nearest = Infinity;
+      for (const p of list) {
+        const dx = (candidate.posX - p.posX) / 100 * vw;
+        const dy = (candidate.posY - p.posY) / 100 * vh;
+        const d = Math.sqrt(dx * dx + dy * dy);
+        if (d < nearest) nearest = d;
+      }
+      if (nearest >= MIN_DIST_PX) return candidate; // 找到一个够远的位置，直接用
+      if (nearest > bestMinDist) { bestMinDist = nearest; best = candidate; } // 记录目前试过最不挤的一个，保底用
+    }
+    return best || randomZonePos();
   }
 
   // 发送留言
@@ -69,8 +98,8 @@
     }).then(() => {
       contentInput.value = '';
       (window.showToast || alert)('Your wish has been released to the ocean! 🌊💙');
-      
-      // 🌟 新增：发送成功后自动隐藏表单，方便查看海面
+
+      // 🌟 新增：发送成功后自动隐藏表单，方便查看海面（副标题会跟着 toggleMsgForm('hide') 自动切换）
       if (typeof window.toggleMsgForm === 'function') {
         window.toggleMsgForm('hide');
       }
@@ -88,15 +117,22 @@
     messageOcean.innerHTML = '';
 
     const data = snapshot.val();
-    if (!data) return;
+    if (!data) { occupiedPositions = []; return; }
+
+    const usedPositions = []; // 本轮渲染中已分配出去的坐标，避免彼此叠加
 
     Object.keys(data).forEach((key) => {
       const msg = data[key];
-      
-      // 防护 1：兼容旧数据缺少坐标/类型的情况（统一改为围绕四周分布，避开中间留言表单）
-      const fallbackPos = getEdgePosition();
-      const posX = (msg.posX !== undefined && msg.posX !== null) ? msg.posX : fallbackPos.posX;
-      const posY = (msg.posY !== undefined && msg.posY !== null) ? msg.posY : fallbackPos.posY;
+
+      // 防护 1：兼容旧数据缺少坐标/类型的情况（统一改为围绕四周分布，避开中间留言表单，并避开已排好的其他图标）
+      let posX, posY;
+      if (msg.posX !== undefined && msg.posX !== null && msg.posY !== undefined && msg.posY !== null) {
+        posX = msg.posX; posY = msg.posY;
+      } else {
+        const fallbackPos = getEdgePosition(usedPositions);
+        posX = fallbackPos.posX; posY = fallbackPos.posY;
+      }
+      usedPositions.push({ posX, posY });
       const type = msg.type || 'bottle';
 
       const item = document.createElement('div');
@@ -118,6 +154,8 @@
 
       messageOcean.appendChild(item);
     });
+
+    occupiedPositions = usedPositions; // 供下一次发送新留言时避开目前海面上所有图标
   });
 </script>
 
@@ -831,7 +869,7 @@ html, body {
       🔙 Back to Main Deck
     </button>
     <h2 class="title" style="font-size: 28px; margin: 0;">Ocean of Blessings</h2>
-    <div class="subtitle">Choose your ocean companion and send your wishes into the deep blue.💙</div>
+    <div class="subtitle" id="msgSubtitle">Choose your ocean companion and send your wishes into the deep blue.💙</div>
 
     <div class="message-form-card" id="msgFormCard">
       <button class="form-close-btn" onclick="toggleMsgForm('hide')">✕</button>
@@ -1362,13 +1400,18 @@ if (downloadBtn) {
 window.toggleMsgForm = function(action) {
   const formCard = document.getElementById('msgFormCard');
   const reopenBtn = document.getElementById('reopenFormBtn');
+  const subtitleEl = document.getElementById('msgSubtitle');
   
   if (action === 'hide') {
     formCard.style.display = 'none';
     reopenBtn.style.display = 'inline-flex';
+    // 🌟 X 掉留言表单后，副标题换成生日祝福
+    if (subtitleEl) subtitleEl.textContent = 'Happy Birthday, Nam Yejun!💙';
   } else {
     formCard.style.display = 'block';
     reopenBtn.style.display = 'none';
+    // 🌟 打开留言表单时，副标题换回选择留言方式的引导文案
+    if (subtitleEl) subtitleEl.textContent = 'Choose your ocean companion and send your wishes into the deep blue.💙';
   }
 };
 
